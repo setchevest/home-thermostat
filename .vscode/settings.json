@@ -1,0 +1,16 @@
+{
+    "files.associations": {
+        "map": "cpp",
+        "__tree": "cpp",
+        "bitset": "cpp",
+        "set": "cpp",
+        "__locale": "cpp",
+        "locale": "cpp",
+        "array": "cpp",
+        "iterator": "cpp",
+        "string": "cpp",
+        "string_view": "cpp",
+        "vector": "cpp"
+    },
+    "C_Cpp.intelliSenseEngineFallback": "Enabled"
+}

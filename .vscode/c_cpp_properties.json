@@ -1,0 +1,29 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "/Applications/Arduino.app/Contents/Java/hardware/arduino/avr/cores/arduino",
+                "${workspaceFolder}",
+                "/Users/sebastian.etchevest/Documents/Arduino/libraries/ArduinoJson/src"
+            ],
+            "browse": {
+                "limitSymbolsToIncludedHeaders": false,
+                "path": [
+                    "/Applications/Arduino.app/Contents/Java/hardware/arduino/avr/cores/arduino",
+                    "${workspaceFolder}",
+                    "/Users/sebastian.etchevest/Documents/Arduino/libraries/ArduinoJson/src"
+                ]
+            },
+            "macFrameworkPath": [
+                "/System/Library/Frameworks",
+                "/Library/Frameworks"
+            ],
+            "intelliSenseMode": "clang-x64",
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}
