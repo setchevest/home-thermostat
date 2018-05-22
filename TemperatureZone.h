@@ -1,7 +1,7 @@
 #ifndef TemperatureZone_h
 #define TemperatureZone_h
 
-#include <Serializable.h>
+#include <Common/Serializable.h>
 #include <TemperatureData.h>
 
 class TemperatureZone : Serializable
@@ -9,20 +9,23 @@ class TemperatureZone : Serializable
   private:
     int _id;
     String _name;
-    TemperatureData *data;
+    TemperatureData data;
     bool _active;
 
   public:
-    TemperatureZone(int id, String name, uint8_t sensorPin)
+    TemperatureZone(const int id, const String name, uint8_t sensorPin)
+        : _id(id), _name(name), data(TemperatureData(sensorPin))
     {
-        _id = id;
-        _name = name;
-        data = new TemperatureData(sensorPin);
+        
+    }
+
+    TemperatureZone()
+        :TemperatureZone(-1,F("NONE"),0)
+    {
     }
 
     ~TemperatureZone()
     {
-        delete data;
     }
 
     bool isActive()
@@ -37,7 +40,7 @@ class TemperatureZone : Serializable
 
     void updateStatus()
     {
-        data->updateData();
+        data.updateData();
     }
 
     String getFriendlyName()
@@ -50,7 +53,7 @@ class TemperatureZone : Serializable
         root["name"] = _name;
         root["id"] = _id;
         root["active"] = _active;
-        data->toJson(root.createNestedObject("data"));
+        data.toJson(root.createNestedObject("data"));
     }
 };
 

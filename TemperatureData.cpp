@@ -3,26 +3,30 @@
 #define DHTTYPE DHT11 // DHT 11
 
 TemperatureData::TemperatureData(uint8_t sensorPin)
+    :dhtSensor(DHT(sensorPin, DHT11))
 {
     temperature = NAN;
     humidity = NAN;
     heatIndex = NAN;
-    dhtSensor = new DHT(sensorPin, DHT11);
-    dhtSensor->begin();
+    lastUpdate = 0;
+    dhtSensor.begin();
+}
+TemperatureData::TemperatureData()
+    :TemperatureData(0)
+{
 }
 
 TemperatureData::~TemperatureData()
 {
-    delete dhtSensor;
 }
 
 void TemperatureData::updateData()
 {
     // Reading temperature or humidity takes about 250 milliseconds!
     // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
-    float hum = dhtSensor->readHumidity();
+    float hum = dhtSensor.readHumidity();
     // Read temperature as Celsius (the default)
-    float temp = dhtSensor->readTemperature();
+    float temp = dhtSensor.readTemperature();
     // Check if any reads failed and exit early (to try again).
     if (isnan(temp) || isnan(hum))
     {
@@ -31,7 +35,7 @@ void TemperatureData::updateData()
     lastUpdate = millis();
     humidity = hum;
     temperature = temp;
-    heatIndex = dhtSensor->computeHeatIndex(temperature, humidity, false);
+    heatIndex = dhtSensor.computeHeatIndex(temperature, humidity, false);
 }
 
 void TemperatureData::toJson(JsonObject &root)

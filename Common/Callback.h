@@ -47,6 +47,33 @@ class CallableFromObject : public Callable
     }
 };
 
+template <typename Lambda>
+class CallableFromLambda : public Callable
+{
+  private:
+    Lambda &&l;
+
+  public:
+    CallableFromLambda(Lambda&& lambda) 
+    : l(lambda) {}
+
+    void operator()()
+    {
+        l();
+    }
+};
+
+class NotCallable : public Callable
+{
+    public:
+    NotCallable(){}
+    void operator()()
+    {
+        Serial.println("Calling a Not Callable object. Please review your code");
+        //Do Nothing.
+    }
+};
+
 // wraps pointer-to-functions or pointer-to-static-members
 class CallableFromFunction : public Callable
 {
@@ -70,8 +97,11 @@ class Callback : public Callable
     Callable &c;
 
   public:
+    Callback() : c(*new NotCallable()) {}
     template <class C>
     Callback(C &object, void (C::*method)()) : c(*new CallableFromObject<C>(object, method)) {}
+    template<typename Lambda>
+    Callback(Lambda&& lambda) : c(*new CallableFromLambda<Lambda>(lambda)) { }
     explicit Callback(void (*function)()) : c(*new CallableFromFunction(function)) {}
     void operator()()
     {

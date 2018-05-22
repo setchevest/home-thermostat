@@ -1,3 +1,8 @@
+#ifndef LinkedList_h
+#define LinkedList_h
+
+#include <Common/Interfaces/IList.h>
+
 template<class T>
 struct node {
 	node<T>* next;
@@ -5,14 +10,16 @@ struct node {
 };
 
 template<class T>
-class LinkedList
+class LinkedList : public IList<T>
 {
 private:
 	int lenght = 0;
 public:
 	node<T>* first;
 	node<T>* last;
-	LinkedList<T>() {
+	LinkedList<T>()
+		:IList<T>() 
+	{
 		first = NULL;
 		last = NULL;
 	}
@@ -68,3 +75,5 @@ public:
 	}
 
 };
+
+#endif

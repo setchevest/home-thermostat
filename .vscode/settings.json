@@ -10,7 +10,26 @@
         "iterator": "cpp",
         "string": "cpp",
         "string_view": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "__functional_03": "cpp",
+        "functional": "cpp",
+        "__bit_reference": "cpp",
+        "__mutex_base": "cpp",
+        "hash_map": "cpp",
+        "hash_set": "cpp",
+        "fstream": "cpp",
+        "ios": "cpp",
+        "istream": "cpp",
+        "memory": "cpp",
+        "ostream": "cpp",
+        "sstream": "cpp",
+        "streambuf": "cpp",
+        "tuple": "cpp",
+        "*.tcc": "cpp",
+        "rope": "cpp",
+        "slist": "cpp",
+        "queue": "cpp",
+        "stack": "cpp"
     },
     "C_Cpp.intelliSenseEngineFallback": "Enabled"
 }

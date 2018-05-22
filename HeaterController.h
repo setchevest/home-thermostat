@@ -2,7 +2,7 @@
 #define HeaterController_h
 
 #include <Arduino.h>
-#include <Serializable.h>
+#include <Common/Serializable.h>
 
 class HeaterController : public Serializable
 {

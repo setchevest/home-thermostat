@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 #include <DHT.h>
-#include <Serializable.h>
+#include <Common/Serializable.h>
 
 class TemperatureData : Serializable
 {
@@ -13,15 +13,16 @@ private:
   float humidity;
   float heatIndex;
   unsigned long lastUpdate;
-  DHT *dhtSensor;
+  DHT dhtSensor;
 
 public:
   TemperatureData(uint8_t sensorPin);
+  TemperatureData();
   ~TemperatureData();
-  float getTemperature() { return temperature || 0; }
-  float getHumidity() { return humidity || 0; }
-  float getHeatIndex() { return heatIndex || 0; }
-  float getLastUpdate() { return lastUpdate || 0; }
+  float getTemperature() { return temperature || NAN; }
+  float getHumidity() { return humidity || NAN; }
+  float getHeatIndex() { return heatIndex || NAN; }
+  float getLastUpdate() { return lastUpdate || NAN; }
   void updateData();
   /* virtual override */ String getFriendlyName() 
   { 

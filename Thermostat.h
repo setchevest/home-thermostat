@@ -3,22 +3,25 @@
 
 #include <ControlStrategy.h>
 #include <HeaterController.h>
-#include <TemperatureZone.h>
-#include <Serializable.h>
-#include <LinkedList.h>
+#include <ZoneList.h>
+#include <Common/ContextableThread.h>
+#include <Common/Callback.h>
+#include <Common/Serializable.h>
+#include <Common/Environment.h>
+#include <IO/CommandHandler.h>
 
 class Thermostat : public Serializable
 {
   private:
     HeaterController heater;
-    LinkedList<TemperatureZone *> zones;
+    ZoneList zoneList;
 
   public:
     Thermostat(uint8_t heaterRelayPin, uint8_t heaterStatusPin);
     ~Thermostat();
     void addZone(TemperatureZone *zone);
     void addZone(int id, String name, uint8_t sensorPin);
-    void updateStatus();
+    void keepAlive();
     String getFriendlyName();
     void toJson(JsonObject &root);
     void toggleHeater();
@@ -27,35 +30,25 @@ class Thermostat : public Serializable
 #endif
 
 Thermostat::Thermostat(uint8_t heaterRelayPin, uint8_t heaterStatusPin)
-    :heater(HeaterController(heaterRelayPin, heaterStatusPin))
+    :heater(HeaterController(heaterRelayPin, heaterStatusPin)), zoneList(ZoneList())
 {
-    zones = LinkedList<TemperatureZone *>();
+    
 }
-
 Thermostat::~Thermostat()
 {
-    for (size_t i = 0; i < zones.getLenght(); i++)
-    {
-        delete zones[i];
-    }
 }
 
-void Thermostat::updateStatus()
+void Thermostat::keepAlive()
 {
-    for (size_t i = 0; i < zones.getLenght(); i++)
+    for (size_t i = 0; i < zoneList.getLenght(); i++)
     {
-        zones[i]->updateStatus();
+        zoneList[i]->updateStatus();
     }
 }
 
 void Thermostat::addZone(int id, String name, uint8_t sensorPin)
 {
-    addZone(new TemperatureZone(id, name, sensorPin));
-}
-
-void Thermostat::addZone(TemperatureZone *zone)
-{
-    zones.add(zone);
+    zoneList.add(id, name, sensorPin);
 }
 
 String Thermostat::getFriendlyName()
@@ -66,12 +59,11 @@ String Thermostat::getFriendlyName()
 void Thermostat::toJson(JsonObject &root)
 {
     heater.toJson(root.createNestedObject("heater"));
-    JsonArray &data = root.createNestedArray("zones");
-    for (size_t i = 0; i < zones.getLenght(); i++)
+    JsonArray &jsonZones = root.createNestedArray("zones");
+    for (size_t i = 0; i < zoneList.getLenght(); i++)
     {
-        zones[i]->toJson(data.createNestedObject());
+        zoneList[i]->toJson(jsonZones.createNestedObject());
     }
-    
 }
 
 void Thermostat::toggleHeater()

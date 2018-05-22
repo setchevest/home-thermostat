@@ -1,3 +1,5 @@
+#ifndef ControlStrategy_h
+#define ControlStrategy_h
 
 class ControlStrategy
 {
@@ -17,3 +19,5 @@ ControlStrategy::ControlStrategy()
 ControlStrategy::~ControlStrategy()
 {
 }
+
+#endif
