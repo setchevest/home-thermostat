@@ -29,7 +29,15 @@
         "rope": "cpp",
         "slist": "cpp",
         "queue": "cpp",
-        "stack": "cpp"
+        "stack": "cpp",
+        "__hash_table": "cpp",
+        "__split_buffer": "cpp",
+        "deque": "cpp",
+        "initializer_list": "cpp",
+        "list": "cpp",
+        "random": "cpp",
+        "unordered_set": "cpp",
+        "utility": "cpp"
     },
     "C_Cpp.intelliSenseEngineFallback": "Enabled"
 }

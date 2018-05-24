@@ -8,25 +8,22 @@ class TemperatureZone : Serializable
 {
   private:
     int _id;
+    uint8_t _sensorPin;
     String _name;
     TemperatureData data;
-    bool _active;
+    bool _active = true;
 
   public:
     TemperatureZone(const int id, const String name, uint8_t sensorPin)
-        : _id(id), _name(name), data(TemperatureData(sensorPin))
-    {
-        
-    }
+        : _id(id), _name(name), data(TemperatureData(sensorPin)), _sensorPin(sensorPin)
+    {}
 
     TemperatureZone()
-        :TemperatureZone(-1,F("NONE"),0)
-    {
-    }
+        : TemperatureZone(-1, F("NONE"), 0)
+    {}
 
     ~TemperatureZone()
-    {
-    }
+    {}
 
     bool isActive()
     {
@@ -35,12 +32,20 @@ class TemperatureZone : Serializable
 
     void activate()
     {
+        _active = true;
+    }
+
+    void deactivate()
+    {
         _active = false;
     }
 
     void updateStatus()
     {
-        data.updateData();
+        if (isActive())
+        {
+            data.updateData();
+        }
     }
 
     String getFriendlyName()
@@ -50,8 +55,9 @@ class TemperatureZone : Serializable
 
     void toJson(JsonObject &root)
     {
-        root["name"] = _name;
+        root["sensorPin"] = _sensorPin;
         root["id"] = _id;
+        root["name"] = _name;
         root["active"] = _active;
         data.toJson(root.createNestedObject("data"));
     }

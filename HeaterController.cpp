@@ -18,13 +18,13 @@ HeaterController::HeaterController(uint8_t pin, uint8_t statusLedPin)
 
 void HeaterController::setStatus(byte newStatus)
 {
-    if(newStatus == HIGH || newStatus == LOW)
+    if (newStatus == HIGH || newStatus == LOW)
     {
         status = newStatus;
         digitalWrite(_pin, status);
         if (_statusLedpin > 0)
             digitalWrite(_statusLedpin, status);
-    }   
+    }
 }
 // public
 void HeaterController::on()
@@ -39,7 +39,7 @@ void HeaterController::off()
 
 void HeaterController::toggle()
 {
-    if(getStatus())
+    if (getStatus())
         setStatus(LOW);
     else
         setStatus(HIGH);

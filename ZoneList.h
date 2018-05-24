@@ -2,21 +2,22 @@
 #define ZoneList_h
 #include <Common/LinkedList.h>
 #include <TemperatureZone.h>
+#include <Common/Interfaces/IObserver.h>
 
 class ZoneList : public LinkedList<TemperatureZone *>
 {
 public:
     ~ZoneList()
     {
-        for(size_t i = 0; i < getLenght(); i++)
-        {
+        for(size_t i = 0; i < size(); i++)
             delete this->get(i);
-        }
     }
     
-    void add(int id, String name, uint8_t sensorPin)
+    TemperatureZone* add(int id, String name, uint8_t sensorPin)
     {
-        LinkedList::add(new TemperatureZone(id, name, sensorPin));
+        TemperatureZone *zone = new TemperatureZone(id, name, sensorPin);
+        LinkedList::add(zone);
+        return zone;
     }
 };
 #endif

@@ -29,9 +29,8 @@ void TemperatureData::updateData()
     float temp = dhtSensor.readTemperature();
     // Check if any reads failed and exit early (to try again).
     if (isnan(temp) || isnan(hum))
-    {
         return;
-    }
+    
     lastUpdate = millis();
     humidity = hum;
     temperature = temp;

@@ -3,23 +3,27 @@
 
 #include <Thread.h>
 #include <Common/Callback.h>
+#include <Common/Environment.h>
+#include <Common/Interfaces/IObserver.h>
 
-class ContextableThread : public Thread
+
+class ContextableThread : public Thread, public IObserver
 {
   protected:
-      Callback &_function;
+    Callback &_function;
 
   public:
     ContextableThread(Callback &callback, unsigned long interval)
         : Thread(nullptr, interval), _function(callback)
-     
+
     {
+        TickNotifier::getInstance().attach(this);
     }
 
     ~ContextableThread()
     {
     }
-    
+
     /* virtual override */ void run()
     {
         _function();
@@ -28,7 +32,7 @@ class ContextableThread : public Thread
     }
 
     //adding a basic check to avoid the "if" sentence in business code.
-    void check()
+    void update()
     {
         if (shouldRun())
             run();

@@ -13,7 +13,7 @@ template<class T>
 class LinkedList : public IList<T>
 {
 private:
-	int lenght = 0;
+	size_t lenght = 0;
 public:
 	node<T>* first;
 	node<T>* last;
@@ -51,7 +51,7 @@ public:
 		lenght++;
 	}
 
-	int getLenght()
+	size_t size()
 	{
 		return lenght;
 	}
