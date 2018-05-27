@@ -24,6 +24,19 @@ static int getFreeMemory()
     return __brkval ? &top - __brkval : &top - __malloc_heap_start;
 #endif // __arm__
 }
+
+static void printDiagnosticData(Print &p)
+{
+    p.print(F("Free Memory: "));
+    p.println(getFreeMemory());
+    delay(1);
+}
+
+static unsigned long getNowInMilliseconds()
+{
+    return millis();
+}
+
 } // namespace Environment
 
 class TickNotifier : public GenericObservable
@@ -39,6 +52,11 @@ class TickNotifier : public GenericObservable
     // your singleton appearing.
     TickNotifier(TickNotifier const &) = delete;
     void operator=(TickNotifier const &) = delete;
+
+    /*override*/ void notify()
+    {
+        GenericObservable::notify();
+    }
 
   private:
     TickNotifier() {} // Constructor? (the {} brackets) are needed here.

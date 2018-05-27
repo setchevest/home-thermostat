@@ -1,18 +1,13 @@
-#include "Arduino.h"
 #include "HeaterController.h"
 
-HeaterController::HeaterController(uint8_t pin)
-    : HeaterController(pin, 0)
-{
-}
+using namespace Configuration;
 
-HeaterController::HeaterController(uint8_t pin, uint8_t statusLedPin)
+HeaterController::HeaterController(ThermostatConfig &_config)
+    :config(_config)
 {
-    pinMode(pin, OUTPUT);
-    _pin = pin;
-    _statusLedpin = statusLedPin;
-    if (_statusLedpin > 0)
-        pinMode(_statusLedpin, OUTPUT);
+    
+    pinMode(config.heaterPin, OUTPUT);
+    off();
 }
 // privates
 
@@ -21,9 +16,7 @@ void HeaterController::setStatus(byte newStatus)
     if (newStatus == HIGH || newStatus == LOW)
     {
         status = newStatus;
-        digitalWrite(_pin, status);
-        if (_statusLedpin > 0)
-            digitalWrite(_statusLedpin, status);
+        digitalWrite(config.heaterPin, status);
     }
 }
 // public
@@ -48,11 +41,6 @@ void HeaterController::toggle()
 boolean HeaterController::getStatus()
 {
     return status == HIGH;
-}
-
-String HeaterController::getFriendlyName()
-{
-    return "HeaterController";
 }
 
 void HeaterController::toJson(JsonObject &root)

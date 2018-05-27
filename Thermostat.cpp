@@ -1,74 +1,77 @@
 #include <Thermostat.h>
 
+using namespace Configuration;
+
 Thermostat::Thermostat(ThermostatConfig &_config)
+    : config(_config)
 {
-    config = &_config;
-    init();
 }
 
 Thermostat::~Thermostat()
 {
-    delete config;
     delete heater;
     delete zoneList;
-    delete thread1;
+    delete timer;
 }
 
 void Thermostat::init()
 {
+    Serial.println("Initializing Thermostat");
     zoneList = new ZoneList();
-    thread1 = new ContextableThread(*new Callback(*this, &Thermostat::getDataFromSensors), 10000);
-    heater = new HeaterController(config->heaterPin, config->heaterStatusPin);
-
-    ZoneConfig *zc;
-    for (size_t i = 0; i < config->zonesQuantity; i++)
+    timer = new Timer(*new Callback(*this, &Thermostat::check), config.updateFrequency);
+    heater = new HeaterController(config);
+    for (size_t i = 0; i < config.zonesQuantity; i++)
     {
-        addZone(config->zones[i]);
+        addZone(config.zones[i]);
     }
+    check();
+}
+void Thermostat::check()
+{
+    getDataFromSensors();
+    invalidateHeaterStatus();
 }
 
 void Thermostat::getDataFromSensors()
 {
-    for (size_t i = 0; i < zoneList->size(); i++)
+    if (zoneList)
     {
-        zoneList->get(i)->updateStatus();
+        Serial.println("Getting data from Sensors");
+        for (size_t i = 0; i < zoneList->size(); i++)
+        {
+            zoneList->get(i)->updateStatus();
+        }
     }
-
-    printTo(Serial);
-    Serial.println();
 }
 
 void Thermostat::addZone(ZoneConfig &zoneConfig)
 {
-    zoneList->add(zoneConfig.id, zoneConfig.name, zoneConfig.sensorPin);
-}
-
-String Thermostat::getFriendlyName()
-{
-    return "Thermostat";
+    if (zoneList)
+        zoneList->add(zoneConfig.id, zoneConfig.name, zoneConfig.sensorPin);
 }
 
 void Thermostat::toJson(JsonObject &root)
 {
-    root["heaterPin"] = config->heaterPin;
-    root["heaterStatusPin"] = config->heaterStatusPin;
+    root["lastUpdate"] = timer->getLastRunInMilliseconds();
     heater->toJson(root.createNestedObject("heater"));
     JsonArray &jsonZones = root.createNestedArray("zones");
     for (size_t i = 0; i < zoneList->size(); i++)
         zoneList->get(i)->toJson(jsonZones.createNestedObject());
 }
 
-void Thermostat::toggleHeater()
+void Thermostat::invalidateHeaterStatus()
 {
-    if (heater != nullptr)
-        heater->toggle();
+    if (zoneList)
+    {
+        TemperatureZone *zone = zoneList->getById(config.threshold.controlZoneId);        
+        if (!zone->isTemperatureComfortable(config.threshold.min, config.threshold.max, heater->getStatus()))
+            toggleHeater();
+
+    }
 }
 
-void Thermostat::printTo(Print &printer)
+void Thermostat::toggleHeater()
 {
-    DynamicJsonBuffer jsonBuffer(500);
-    JsonObject &root = jsonBuffer.createObject();
-    toJson(root);
-    root.printTo(printer);
-    //root.prettyPrintTo(printer);
+    if (heater)
+        heater->toggle();
 }

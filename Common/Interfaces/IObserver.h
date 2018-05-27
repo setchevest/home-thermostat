@@ -58,11 +58,13 @@ public:
     observers->add(obs);
   }
 
-  void notify()
+  virtual void notify()
   {
     for (int i = 0; i < observers->size(); i++)
+    {
       observers->get(i)->update();
-  }
+    }
+  };
 };
 
 #endif

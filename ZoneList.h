@@ -13,11 +13,26 @@ public:
             delete this->get(i);
     }
     
-    TemperatureZone* add(int id, String name, uint8_t sensorPin)
+    TemperatureZone* add(const int id,const String name, uint8_t sensorPin)
     {
         TemperatureZone *zone = new TemperatureZone(id, name, sensorPin);
         LinkedList::add(zone);
         return zone;
+    }
+
+    TemperatureZone* getById(int id)
+    {
+        TemperatureZone* result = nullptr;
+        for (size_t i = 0; i < size(); i++)
+        {
+            result = this->get(i);
+            if (id == result->getId())
+                break;
+            
+            result = nullptr;
+        }
+
+        return result;
     }
 };
 #endif

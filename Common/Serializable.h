@@ -11,7 +11,6 @@ private:
 public:
     Serializable(/* args */) { }
     ~Serializable() { }
-    virtual String getFriendlyName() = 0;
     virtual void toJson(JsonObject &root) = 0;
 };
 

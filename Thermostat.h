@@ -1,48 +1,34 @@
 #ifndef Thermostat_h
 #define Thermostat_h
 
-#include <ControlStrategy.h>
+#include <Configuration.h>
 #include <HeaterController.h>
 #include <ZoneList.h>
-#include <Common/ContextableThread.h>
+#include <Common/Timer.h>
 #include <Common/Callback.h>
 #include <Common/Serializable.h>
 #include <Common/Environment.h>
 #include <Common/Interfaces/IObserver.h>
 
-struct ZoneConfig
-{
-    int id;
-    String name;
-    uint8_t sensorPin;
-};
-
-struct ThermostatConfig
-{
-    uint8_t heaterPin;
-    uint8_t heaterStatusPin;
-    size_t zonesQuantity;
-    ZoneConfig *zones;
-};
+using namespace Configuration;
 
 class Thermostat : public Serializable
 {
   private:
     HeaterController *heater = nullptr;
     ZoneList *zoneList = nullptr;
-    ContextableThread *thread1 = nullptr;
-    ThermostatConfig *config = nullptr;
-
-    void init();
+    Timer *timer = nullptr;
+    ThermostatConfig &config;
     void getDataFromSensors();
-    void printTo(Print &printer);
+    void check();
 
   public:
     Thermostat(ThermostatConfig &config);
     ~Thermostat();
+    void init();
     void addZone(ZoneConfig &zoneConfig);
-    String getFriendlyName();
     void toJson(JsonObject &root);
+    void invalidateHeaterStatus();
     void toggleHeater();
 };
 

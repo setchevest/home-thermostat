@@ -8,7 +8,6 @@ TemperatureData::TemperatureData(uint8_t sensorPin)
     temperature = NAN;
     humidity = NAN;
     heatIndex = NAN;
-    lastUpdate = 0;
     dhtSensor.begin();
 }
 TemperatureData::TemperatureData()
@@ -31,7 +30,6 @@ void TemperatureData::updateData()
     if (isnan(temp) || isnan(hum))
         return;
     
-    lastUpdate = millis();
     humidity = hum;
     temperature = temp;
     heatIndex = dhtSensor.computeHeatIndex(temperature, humidity, false);
@@ -39,8 +37,7 @@ void TemperatureData::updateData()
 
 void TemperatureData::toJson(JsonObject &root)
 {
-    root["lastUpdate"] = lastUpdate / 1000;
-    root["temperature"] = temperature;
-    root["humidity"] = humidity;
-    root["heatIndex"] = heatIndex;
+    root["temp"] = temperature;
+    root["hum"] = humidity;
+    root["hIndex"] = heatIndex;
 }

@@ -12,22 +12,16 @@ private:
   float temperature;
   float humidity;
   float heatIndex;
-  unsigned long lastUpdate;
   DHT dhtSensor;
 
 public:
-  TemperatureData(uint8_t sensorPin);
+  TemperatureData(const uint8_t sensorPin);
   TemperatureData();
   ~TemperatureData();
-  float getTemperature() { return temperature || NAN; }
-  float getHumidity() { return humidity || NAN; }
-  float getHeatIndex() { return heatIndex || NAN; }
-  float getLastUpdate() { return lastUpdate || NAN; }
+  float getTemperature() { return temperature; }
+  float getHumidity() { return humidity; }
+  float getHeatIndex() { return heatIndex; }
   void updateData();
-  /* virtual override */ String getFriendlyName() 
-  { 
-    return "TemperatureData"; 
-  }
 
   /* virtual override */ void toJson(JsonObject &root);
 };
