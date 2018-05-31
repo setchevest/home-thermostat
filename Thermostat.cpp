@@ -16,7 +16,7 @@ Thermostat::~Thermostat()
 
 void Thermostat::init()
 {
-    Serial.println("Initializing Thermostat");
+    Serial.println(F("Initializing Thermostat"));
     zoneList = new ZoneList();
     timer = new Timer(*new Callback(*this, &Thermostat::check), config.updateFrequency);
     heater = new HeaterController(config);
@@ -36,7 +36,7 @@ void Thermostat::getDataFromSensors()
 {
     if (zoneList)
     {
-        Serial.println("Getting data from Sensors");
+        Serial.println(F("Getting data from Sensors"));
         for (size_t i = 0; i < zoneList->size(); i++)
         {
             zoneList->get(i)->updateStatus();
@@ -52,7 +52,7 @@ void Thermostat::addZone(ZoneConfig &zoneConfig)
 
 void Thermostat::toJson(JsonObject &root)
 {
-    root["lastUpdate"] = timer->getLastRunInMilliseconds();
+    root["lastUpdate"] = Environment::getNowInMilliseconds() - timer->getLastRunInMilliseconds() / 1000;
     heater->toJson(root.createNestedObject("heater"));
     JsonArray &jsonZones = root.createNestedArray("zones");
     for (size_t i = 0; i < zoneList->size(); i++)

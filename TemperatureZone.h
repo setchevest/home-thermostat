@@ -8,27 +8,30 @@
 class TemperatureZone : Serializable
 {
   private:
-    int _id;
-    String _name;
-    TemperatureData data;
+    unsigned int _id;
+    const char* _name;
+    TemperatureData* data;
     bool _active = true;
 
   public:
-    TemperatureZone(const int id, const String name, uint8_t sensorPin)
-        : _id(id), _name(name), data(TemperatureData(sensorPin))
+    TemperatureZone(unsigned int id, const char* name, uint8_t sensorPin)
+        : _id(id), _name(name), data(new TemperatureData(sensorPin))
     {
     }
 
     TemperatureZone()
-        : TemperatureZone(-1, F("NONE"), 0)
+        : TemperatureZone(-1, "NONE", 0)
     {
     }
 
-    ~TemperatureZone() {}
+    ~TemperatureZone() 
+    {
+        delete data;
+    }
 
-    int getId() { return _id; }
+    unsigned int getId() { return _id; }
 
-    String getName() { return _name; }
+    const char* getName() { return _name; }
 
     bool isActive() { return _active; }
 
@@ -40,7 +43,7 @@ class TemperatureZone : Serializable
     {
         if (isActive())
         {
-            data.updateData();
+            data->updateData();
         }
     }
 
@@ -48,7 +51,7 @@ class TemperatureZone : Serializable
     {
         Serial.print(F("Memory:"));
         Serial.println(Environment::getFreeMemory());
-        float current = data.getHeatIndex();
+        float current = data->getHeatIndex();
         Serial.print(F("Is Warming?: "));
         Serial.print(isWarming);
         Serial.print(F("- Min: "));
@@ -68,7 +71,7 @@ class TemperatureZone : Serializable
         root["id"] = _id;
         root["name"] = _name;
         root["active"] = _active;
-        data.toJson(root);
+        data->toJson(root);
     }
 };
 

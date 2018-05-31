@@ -23,6 +23,7 @@ class Timer : public IObserver
 
     ~Timer()
     {
+        delete &_function;
     }
 
     unsigned long getLastRunInMilliseconds()
@@ -43,7 +44,7 @@ class Timer : public IObserver
     }
 
     //adding a basic check to avoid the "if" sentence in business code.
-    void update()
+    void update(const char* command)
     {
         if (shouldRun())
             run();

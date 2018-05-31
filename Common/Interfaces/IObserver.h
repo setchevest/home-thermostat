@@ -6,7 +6,7 @@
 class IObserver
 {
 public:
-  virtual void update() = 0;
+  virtual void update(const char* command) = 0;
 };
 
 class IObservable
@@ -58,11 +58,11 @@ public:
     observers->add(obs);
   }
 
-  virtual void notify()
+  virtual void notify(const char* command)
   {
     for (int i = 0; i < observers->size(); i++)
     {
-      observers->get(i)->update();
+      observers->get(i)->update(command);
     }
   };
 };

@@ -5,6 +5,8 @@
 #include <Common/Serializable.h>
 #include <Common/Interfaces/IObserver.h>
 #include <Configuration.h>
+#include <IO/NamedCallbackRegistry.h>
+#include <IO/JsonResponse.h>
 
 // the maximum length of paramters we accept
 const unsigned int MAX_GET_INPUT = 100;
@@ -13,12 +15,15 @@ const int MAX_PARAM = 10;
 class EthernetCommandHandler : public IObserver
 {
   private:
-    EthernetServer server;
-    Serializable &itemToSerialize;
+    EthernetServer server; //Used for incomming request
+    EthernetClient httpClient; //Used for outgoing request
+    Serializable &responseBody;
     Configuration::EthernetConfiguration &config;
+    NamedCallbackRegistry commands;
+    bool callServerRequested = false;
 
     // Example GET line: GET /?foo=bar HTTP/1.1
-    void processGet(const char *data)
+    void processIncommingGet(const char *data)
     {
         Serial.println(data);
         // find where the parameters start
@@ -40,15 +45,9 @@ class EthernetCommandHandler : public IObserver
         param[paramLength] = 0;                    // null terminator
 
         // do things depending on argument (GET parameters)
+        commands.handle(param);
 
-        if (strcmp(param, "info") == 0)
-        {
-            
-        }
-        else if (strcmp(param, "bar") == 0)
-            Serial.println(F("Activating bar"));
-
-    } // end of processGet
+    } // end of processIncommingGet
 
     // here to process incoming serial data after a terminator received
     void processData(const char *data)
@@ -57,15 +56,14 @@ class EthernetCommandHandler : public IObserver
             return;
 
         if (memcmp(data, "GET ", 4) == 0)
-            processGet(&data[4]);
-        
+            processIncommingGet(&data[4]);
+
         if (memcmp(data, "PUT ", 4) == 0)
-            processGet(&data[5]);
+            processIncommingGet(&data[5]);
 
         if (memcmp(data, "POST ", 5) == 0)
-            processGet(&data[5]);
+            processIncommingGet(&data[5]);
 
-        
     } // end of processData
 
     bool processIncomingByte(const byte inByte)
@@ -93,9 +91,9 @@ class EthernetCommandHandler : public IObserver
             break;
         }             // end of switch
         return false; // don't have a blank line yet
-    }                 // end of processIncomingByte
+    }
 
-    void processRequest()
+    void processIncomingRequest()
     {
         // listen for incoming clients
         EthernetClient client = server.available();
@@ -104,7 +102,7 @@ class EthernetCommandHandler : public IObserver
             Serial.print(F("Memory:"));
             Serial.println(Environment::getFreeMemory());
             Serial.println(F("Client connected"));
-            
+
             // an http request ends with a blank line
             bool done = false;
             while (client.connected() && !done)
@@ -113,31 +111,42 @@ class EthernetCommandHandler : public IObserver
                     done = processIncomingByte(client.read());
             } // end of while client connected
 
-            // send a standard http response header
-            client.println(F("HTTP/1.1 200 OK"));
-            client.println(F("Content-Type: application/json"));
-            client.println(F("Connection: close")); // close after completion of the response
-            client.println();                       // end of HTTP header
+            JsonResponse response(client, responseBody);
+            response.flush();
             
-            StaticJsonBuffer<250> jsonBuffer;
-            JsonObject &root = jsonBuffer.createObject();
-            itemToSerialize.toJson(root);
-            root.printTo(client);
-
-            // give the web browser time to receive the data
-            delay(1);
-            // close the connection:
-            client.stop();
             Serial.println(F("Client disconnected"));
         } // end of got a new client
     }     // end of loop
 
-  public:
-    EthernetCommandHandler(Configuration::EthernetConfiguration &_config, Serializable &_itemToSerialize)
-        : config(config), itemToSerialize(_itemToSerialize), server(_config.port)
+    // this method makes a HTTP connection to the server:
+    void httpRequest()
     {
-        TickNotifier::getInstance().attach(this);
+        // close any connection before send a new request.
+        // This will free the socket on the WiFi shield
+        httpClient.stop();
+
+        // if there's a successful connection:
+        if (httpClient.connect(config.hostURL, config.hostPort))
+        {
+            Serial.println(F("connecting..."));
+            // send the HTTP GET request:
+            httpClient.println("GET /search?q=arduino HTTP/1.1");
+            httpClient.println("Host: www.google.com");
+            httpClient.println("User-Agent: arduino-ethernet");
+            httpClient.println("Connection: close");
+            httpClient.println();
+            Serial.println(F("Finished."));
+        }
+        else
+        {
+            // if you couldn't make a connection:
+            Serial.println(F("connection failed"));
+        }
     }
+
+  public:
+    EthernetCommandHandler(Configuration::EthernetConfiguration &_config, Serializable &_responseBody)
+        : config(_config), responseBody(_responseBody), server(_config.port), commands(NamedCallbackRegistry()) {}
 
     ~EthernetCommandHandler() {}
 
@@ -150,16 +159,45 @@ class EthernetCommandHandler : public IObserver
             Serial.println(F("Failed to configure Ethernet using DHCP"));
             // no point in carrying on, so do nothing forevermore:
             // try to congifure using IP address instead of DHCP:
-            Ethernet.begin(config.defaultMac, config.defaultIp);
+            Ethernet.begin(config.defaultMac,IPAddress(config.defaultIp[0],config.defaultIp[1],config.defaultIp[2],config.defaultIp[3]));
         }
         server.begin();
         Serial.print(F("server is at "));
         Serial.println(Ethernet.localIP());
+        TickNotifier::getInstance().attach(this);
     }
 
-    void update()
+    void update(const char *command)
     {
-        processRequest();
+        if (strcmp(command, TickNotifier::getInstance().tickCommand) == 0)
+        {
+            processIncomingRequest();
+            if (callServerRequested)
+            {
+                Serial.println(F("calling server"));
+                callServerRequested = false;
+                httpRequest();
+            }
+            else
+            {
+                if (httpClient.available())
+                {
+                    Serial.println(F("Getting data from server"));
+                    char c;
+                    while (httpClient.available())
+                    {
+                        c = httpClient.read();
+                        Serial.print(c);
+                    }
+                }
+            }
+        }
+    }
+
+    void callServerAsync()
+    {
+        Serial.println(F("Call Server requested."));
+        callServerRequested = true;
     }
 };
 

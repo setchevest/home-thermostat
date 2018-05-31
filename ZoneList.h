@@ -13,7 +13,7 @@ public:
             delete this->get(i);
     }
     
-    TemperatureZone* add(const int id,const String name, uint8_t sensorPin)
+    TemperatureZone* add(const int id,const char* name, uint8_t sensorPin)
     {
         TemperatureZone *zone = new TemperatureZone(id, name, sensorPin);
         LinkedList::add(zone);

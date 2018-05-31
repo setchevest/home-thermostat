@@ -69,7 +69,7 @@ class NotCallable : public Callable
     NotCallable(){}
     void operator()()
     {
-        Serial.println("Calling a Not Callable object. Please review your code");
+        Serial.println(F("Calling a Not Callable object. Please review your code"));
         //Do Nothing.
     }
 };
@@ -103,13 +103,37 @@ class Callback : public Callable
     template<typename Lambda>
     Callback(Lambda&& lambda) : c(*new CallableFromLambda<Lambda>(lambda)) { }
     explicit Callback(void (*function)()) : c(*new CallableFromFunction(function)) {}
-    void operator()()
+    virtual void operator()()
     {
         c();
     }
     ~Callback()
     {
         delete &c;
+    }
+};
+
+class NamedCallback : public Callback
+{
+  private:
+    const char* name;
+    const char* description;
+
+  public:
+    template <class C>
+    NamedCallback(const char *_name, const char *_description, C &object, void (C::*method)())
+        : name(_name), description(_description), Callback(object, method) {}
+    template<typename Lambda>
+    NamedCallback(const char *_name, const char *_description, Lambda&& lambda)
+        : name(_name), description(_description), Callback(lambda) {}
+    explicit NamedCallback(const char *_name, const char *_description, void (*function)())
+        : name(_name), description(_description), Callback(function) {}
+    
+    ~NamedCallback() {}
+
+    bool match(const char *name_)
+    {
+        return strcmp(name_, name) == 0;
     }
 };
 #endif

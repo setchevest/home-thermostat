@@ -24,7 +24,7 @@ public:
 		last = NULL;
 	}
 
-	void add(T data) {
+	virtual void add(T data) {
 		if(!first) {
 			// The list is empty
 			first = new node<T>;

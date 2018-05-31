@@ -42,6 +42,7 @@ static unsigned long getNowInMilliseconds()
 class TickNotifier : public GenericObservable
 {
   public:
+    const char* tickCommand = "Tick";
     static TickNotifier &getInstance()
     {
         static TickNotifier instance; // Guaranteed to be destroyed.
@@ -55,7 +56,7 @@ class TickNotifier : public GenericObservable
 
     /*override*/ void notify()
     {
-        GenericObservable::notify();
+        GenericObservable::notify(tickCommand);
     }
 
   private:
