@@ -8,19 +8,17 @@
 class TemperatureData : Serializable
 {
 private:
-  uint8_t sensorPin;
-  float temperature;
-  float humidity;
-  float heatIndex;
+  int temperature;
+  int humidity;
   DHT dhtSensor;
 
 public:
   TemperatureData(const uint8_t sensorPin);
   TemperatureData();
   ~TemperatureData();
-  float getTemperature() { return temperature; }
-  float getHumidity() { return humidity; }
-  float getHeatIndex() { return heatIndex; }
+  int getTemperature() { return temperature; }
+  int getHumidity() { return humidity; }
+  float getHeatIndex() { return dhtSensor.computeHeatIndex(getTemperature(), getHumidity(), false);; }
   void updateData();
 
   /* virtual override */ void toJson(JsonObject &root);

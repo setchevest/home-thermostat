@@ -38,7 +38,7 @@ void HeaterController::toggle()
         setStatus(HIGH);
 }
 
-boolean HeaterController::getStatus()
+bool HeaterController::getStatus()
 {
     return status == HIGH;
 }

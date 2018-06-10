@@ -3,42 +3,33 @@
 
 #include <Ethernet.h>
 #include <Common/Serializable.h>
+#include <IO/WebResponse.h>
 
-class JsonResponse
+#ifndef JSON_BUFFER_SIZE
+#define JSON_BUFFER_SIZE 150
+#endif
+
+class JsonResponse : public WebResponse
 {
   private:
-    Client &client;
     Serializable &body;
-
-    void addHeader()
+  protected:
+    /*virtual*/ const char *getContentType()
     {
-        // send a standard http response header
-        client.println(F("HTTP/1.1 200 OK"));
-        client.println(F("Content-Type: application/json"));
-        client.println(F("Connection: close")); // close after completion of the response
-        client.println();                       // end of HTTP header
+        return "Content-Type: application/json";
     }
 
-    void addBody()
+    /*virtual*/ void addBody(Client &client)
     {
-        StaticJsonBuffer<250> jsonBuffer;
+        StaticJsonBuffer<JSON_BUFFER_SIZE> jsonBuffer;
         JsonObject &root = jsonBuffer.createObject();
         body.toJson(root);
         root.printTo(client);
     }
 
   public:
-    JsonResponse(Client &client_, Serializable &body_) : client(client_),body(body_) {}
+    JsonResponse(Serializable &body_) : body(body_), WebResponse() {}
     ~JsonResponse() {}
-
-    void flush()
-    {
-        addHeader();
-        addBody();
-        delay(1); //let browser get the info.
-        // close the connection:
-        client.stop();
-    }
 };
 
 #endif

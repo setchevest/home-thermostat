@@ -9,69 +9,50 @@ class TemperatureZone : Serializable
 {
   private:
     unsigned int _id;
-    const char* _name;
-    TemperatureData* data;
-    bool _active = true;
+    // const char *_name;
+    TemperatureData data;
 
   public:
-    TemperatureZone(unsigned int id, const char* name, uint8_t sensorPin)
-        : _id(id), _name(name), data(new TemperatureData(sensorPin))
+    TemperatureZone(unsigned int id, const char *name, uint8_t sensorPin)
+        : _id(id), data(TemperatureData(sensorPin)) //,_name(name)
     {
+        
     }
 
-    TemperatureZone()
-        : TemperatureZone(-1, "NONE", 0)
-    {
-    }
-
-    ~TemperatureZone() 
-    {
-        delete data;
-    }
+    ~TemperatureZone() {}
 
     unsigned int getId() { return _id; }
 
-    const char* getName() { return _name; }
-
-    bool isActive() { return _active; }
-
-    void activate() { _active = true; }
-
-    void deactivate() { _active = false; }
+    // const char *getName() { return _name; }
 
     void updateStatus()
     {
-        if (isActive())
-        {
-            data->updateData();
-        }
+        data.updateData();
     }
 
-    bool isTemperatureComfortable(const int min,const int max,const bool isWarming)
+    bool isTemperatureComfortable(const int min, const int max, const bool isWarming)
     {
-        Serial.print(F("Memory:"));
-        Serial.println(Environment::getFreeMemory());
-        float current = data->getHeatIndex();
-        Serial.print(F("Is Warming?: "));
-        Serial.print(isWarming);
-        Serial.print(F("- Min: "));
+        float current = this->data.getHeatIndex();
+        Serial.print(F("Heater: "));
+        Serial.print(isWarming ? "ON" : "OFF");
+        Serial.print(F("  -Min: "));
         Serial.print(min);
-        Serial.print(F("- Max: "));
+        Serial.print(F(" -Max: "));
         Serial.print(max);
-        Serial.print(F("- current: "));
+        Serial.print(F(" -HeatIndex: "));
         Serial.print(current);
         bool res = (!isWarming && current < min) ? false : (isWarming && current > max) ? false : true;
         Serial.print(F("- Is Confortable?: "));
-        Serial.println(res);
+        Serial.println(res ? "YES" : "NO");
         return res;
     }
 
     void toJson(JsonObject &root)
     {
         root["id"] = _id;
-        root["name"] = _name;
-        root["active"] = _active;
-        data->toJson(root);
+        // root["name"] = _name;
+        // root["active"] = _active;
+        data.toJson(root);
     }
 };
 

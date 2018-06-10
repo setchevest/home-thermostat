@@ -13,7 +13,7 @@ extern char *__brkval;
 namespace Environment
 {
 
-static int getFreeMemory()
+static unsigned int getFreeMemory()
 {
     char top;
 #ifdef __arm__

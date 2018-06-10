@@ -11,10 +11,10 @@ class Timer : public IObserver
     unsigned long lastRun;  // last time timer runned in milliseconds
     unsigned long interval; // delay between updates, in milliseconds
   protected:
-    Callback &_function;
+    Callback<void> &_function;
 
   public:
-    Timer(Callback &callback, unsigned long _interval)
+    Timer(Callback<void> &callback, unsigned long _interval)
         : _function(callback), interval(_interval), lastRun(Environment::getNowInMilliseconds())
 
     {
@@ -23,7 +23,7 @@ class Timer : public IObserver
 
     ~Timer()
     {
-        delete &_function;
+        
     }
 
     unsigned long getLastRunInMilliseconds()
@@ -34,7 +34,6 @@ class Timer : public IObserver
     void run()
     {
         _function();
-
         lastRun = Environment::getNowInMilliseconds();
     }
 

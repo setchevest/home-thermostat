@@ -12,7 +12,7 @@ class HeaterController : public Serializable
     HeaterController(ThermostatConfig &_config);
     virtual void on();
     virtual void off();
-    virtual boolean getStatus();
+    virtual bool getStatus();
     virtual void toggle();
     virtual void toJson(JsonObject &root);
 
