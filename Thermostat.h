@@ -22,6 +22,7 @@ class Thermostat : public Serializable
     Timer *timer = nullptr;
     ThermostatConfig config;
     RequestConfig &server;
+    bool manualModeEnabled = true;
     int controlZoneId = -1;
     // Number of milliseconds to wait without receiving any data before we give up
     const unsigned int kNetworkTimeout = 30 * 1000;
@@ -41,6 +42,7 @@ class Thermostat : public Serializable
     void toggleHeater();
     void heaterOn();
     void heaterOff();
+    void setManualMode(bool manualModeEnabled_);
 };
 
 #endif

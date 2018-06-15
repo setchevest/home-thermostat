@@ -33,7 +33,8 @@ void Thermostat::init(ThermostatConfig _config)
 void Thermostat::check()
 {
     getDataFromSensors();
-    invalidateHeaterStatus();
+    if (!manualModeEnabled)
+        invalidateHeaterStatus();
 }
 
 void Thermostat::getDataFromSensors()
@@ -61,8 +62,9 @@ void Thermostat::addZone(ZoneConfig &zoneConfig)
 
 void Thermostat::toJson(JsonObject &root)
 {
-    root["freeMem"] = Environment::getFreeMemory();
-    root["lastUpdate"] = (Environment::getNowInMilliseconds() - timer->getLastRunInMilliseconds()) / 1000;
+    root["fm"] = Environment::getFreeMemory();
+    root["lu"] = (Environment::getNowInMilliseconds() - timer->getLastRunInMilliseconds()) / 1000;
+    root["mode"] = manualModeEnabled ? "Manual" : "Automatic";
     heater->toJson(root.createNestedObject("heater"));
     JsonArray &jsonZones = root.createNestedArray("zones");
     for (size_t i = 0; i < zoneList->size(); i++)
@@ -95,6 +97,11 @@ void Thermostat::heaterOff()
 {
     if (heater)
         heater->off();
+}
+
+void Thermostat::setManualMode(bool manualModeEnabled_)
+{
+    manualModeEnabled = manualModeEnabled_;
 }
 
 void Thermostat::getConfigFromServer()

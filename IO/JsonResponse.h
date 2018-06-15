@@ -6,30 +6,32 @@
 #include <IO/WebResponse.h>
 
 #ifndef JSON_BUFFER_SIZE
-#define JSON_BUFFER_SIZE 150
+#define JSON_BUFFER_SIZE 120
 #endif
 
 class JsonResponse : public WebResponse
 {
-  private:
-    Serializable &body;
-  protected:
-    /*virtual*/ const char *getContentType()
-    {
-        return "Content-Type: application/json";
-    }
+private:
+  Serializable &body;
+  StaticJsonBuffer<JSON_BUFFER_SIZE> jsonBuffer;
 
-    /*virtual*/ void addBody(Client &client)
-    {
-        StaticJsonBuffer<JSON_BUFFER_SIZE> jsonBuffer;
-        JsonObject &root = jsonBuffer.createObject();
-        body.toJson(root);
-        root.printTo(client);
-    }
+protected:
+  /*virtual*/ const char *getContentType()
+  {
+    return "Content-Type: application/json";
+  }
 
-  public:
-    JsonResponse(Serializable &body_) : body(body_), WebResponse() {}
-    ~JsonResponse() {}
+  /*virtual*/ void addBody(Client &client)
+  {
+
+    JsonObject &root = jsonBuffer.createObject();
+    body.toJson(root);
+    root.printTo(client);
+  }
+
+public:
+  JsonResponse(Serializable &body_) : body(body_), WebResponse() {}
+  ~JsonResponse() {}
 };
 
 #endif

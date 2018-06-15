@@ -3,9 +3,9 @@
 using namespace Configuration;
 
 HeaterController::HeaterController(ThermostatConfig &_config)
-    :config(_config)
+    : config(_config)
 {
-    
+
     pinMode(config.heaterPin, OUTPUT);
     off();
 }
@@ -32,10 +32,7 @@ void HeaterController::off()
 
 void HeaterController::toggle()
 {
-    if (getStatus())
-        setStatus(LOW);
-    else
-        setStatus(HIGH);
+    setStatus(getStatus() ? LOW : HIGH);
 }
 
 bool HeaterController::getStatus()
@@ -45,5 +42,5 @@ bool HeaterController::getStatus()
 
 void HeaterController::toJson(JsonObject &root)
 {
-    root["status"] = getStatus();
+    root["status"] = getStatus() ? "ON" : "OFF";
 }
