@@ -74,6 +74,11 @@ public:
 		return get(index);
 	}
 
+	virtual void empty()
+    {
+        //do nothing;
+    }
+
 };
 
 #endif

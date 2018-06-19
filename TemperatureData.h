@@ -18,8 +18,8 @@ public:
   ~TemperatureData();
   int getTemperature() { return temperature; }
   int getHumidity() { return humidity; }
-  float getHeatIndex() { return dhtSensor.computeHeatIndex(getTemperature(), getHumidity(), false);; }
-  void updateData();
+  float getHeatIndex() { return dhtSensor.computeHeatIndex(getTemperature(), getHumidity(), false); }
+  bool updateData();
 
   /* virtual override */ void toJson(JsonObject &root);
 };

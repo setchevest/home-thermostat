@@ -10,5 +10,6 @@ public:
     virtual T get(int index) = 0;
     virtual void add(T data) = 0;
     virtual T operator[](int index) = 0;
+    virtual void empty() = 0;
 };
 #endif

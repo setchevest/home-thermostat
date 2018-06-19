@@ -6,7 +6,7 @@
 #include <IO/WebResponse.h>
 
 #ifndef JSON_BUFFER_SIZE
-#define JSON_BUFFER_SIZE 120
+#define JSON_BUFFER_SIZE 130
 #endif
 
 class JsonResponse : public WebResponse
@@ -23,7 +23,6 @@ protected:
 
   /*virtual*/ void addBody(Client &client)
   {
-
     JsonObject &root = jsonBuffer.createObject();
     body.toJson(root);
     root.printTo(client);

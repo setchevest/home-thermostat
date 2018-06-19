@@ -3,14 +3,20 @@
 using namespace Configuration;
 
 Thermostat::Thermostat(RequestConfig &server_)
-    : server(server_)
+    : server(server_), zoneList(new ZoneList())
 {
 }
 
 Thermostat::~Thermostat()
 {
-    delete heater;
+    cleanup();
     delete zoneList;
+}
+
+void Thermostat::cleanup()
+{
+    delete heater;
+    zoneList->empty();
     delete timer;
 }
 
@@ -18,10 +24,7 @@ void Thermostat::init(ThermostatConfig _config)
 {
     config = _config;
     Serial.println(F("Initializing Thermostat"));
-    delete heater;
-    delete zoneList;
-    delete timer;
-    zoneList = new ZoneList();
+    cleanup();
     timer = new Timer(*new Callback<void>(*this, &Thermostat::check), config.updateFrequency);
     heater = new HeaterController(config);
     for (size_t i = 0; i < config.zonesQuantity; i++)
@@ -39,9 +42,9 @@ void Thermostat::check()
 
 void Thermostat::getDataFromSensors()
 {
+    Serial.println(F("Getting data from Sensors"));
     if (zoneList)
     {
-        Serial.println(F("Getting data from Sensors"));
         for (size_t i = 0; i < zoneList->size(); i++)
         {
             zoneList->get(i)->updateStatus();
@@ -51,13 +54,9 @@ void Thermostat::getDataFromSensors()
 
 void Thermostat::addZone(ZoneConfig &zoneConfig)
 {
-    if (zoneList)
-    {
-        zoneList->add(zoneConfig.id, zoneConfig.name, zoneConfig.sensorPin);
-
-        if (zoneConfig.hasControl)
-            controlZoneId = zoneConfig.id;
-    }
+    zoneList->add(new TemperatureZone(zoneConfig.id, zoneConfig.name, zoneConfig.sensorPin));
+    if (zoneConfig.hasControl)
+        controlZoneId = zoneConfig.id;
 }
 
 void Thermostat::toJson(JsonObject &root)
@@ -73,11 +72,15 @@ void Thermostat::toJson(JsonObject &root)
 
 void Thermostat::invalidateHeaterStatus()
 {
-    if (zoneList)
+    for (size_t i = 0; i < zoneList->size(); i++)
     {
-        TemperatureZone *zone = zoneList->getById(controlZoneId);
-        if (zone && !zone->isTemperatureComfortable(config.threshold.min, config.threshold.max, heater->getStatus()))
-            toggleHeater();
+        if (controlZoneId == zoneList->get(i)->getId())
+        {
+            if(!zoneList->get(i)->isTemperatureComfortable(config.threshold.min, config.threshold.max, heater->getStatus()))
+                toggleHeater();
+            
+            break;
+        }
     }
 }
 

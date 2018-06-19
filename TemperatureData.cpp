@@ -10,8 +10,9 @@ TemperatureData::TemperatureData(uint8_t sensorPin)
 
 TemperatureData::~TemperatureData() { }
 
-void TemperatureData::updateData()
+bool TemperatureData::updateData()
 {
+    bool hasChanges = false;
     // Reading temperature or humidity takes about 250 milliseconds!
     // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
     int hum = dhtSensor.readHumidity();
@@ -19,10 +20,15 @@ void TemperatureData::updateData()
     int temp = dhtSensor.readTemperature();
     // Check if any reads failed and exit early (to try again).
     if (isnan(temp) || isnan(hum))
-        return;
-
+        return hasChanges;
+    
+    if(hum!= humidity || temp != temperature)
+        hasChanges = true;
+    
     humidity = hum;
     temperature = temp;
+
+    return hasChanges;
 }
 
 void TemperatureData::toJson(JsonObject &root)
