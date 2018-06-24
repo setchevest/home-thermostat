@@ -27,9 +27,11 @@ static unsigned int getFreeMemory()
 
 static void printDiagnosticData(Print &p)
 {
+#ifdef LOGGING
     p.print(F("Free Memory: "));
     p.println(getFreeMemory());
     delay(1);
+#endif
 }
 
 static unsigned long getNowInMilliseconds()
@@ -42,7 +44,7 @@ static unsigned long getNowInMilliseconds()
 class TickNotifier : public GenericObservable
 {
   public:
-    const char* tickCommand = "Tick";
+    const char *tickCommand = "Tick";
     static TickNotifier &getInstance()
     {
         static TickNotifier instance; // Guaranteed to be destroyed.

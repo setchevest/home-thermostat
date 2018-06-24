@@ -3,6 +3,12 @@
 #include <IO/WebService.h>
 #include <IO/JsonResponse.h>
 
+#define THERMOSTAT_INFO_COMMAND ""
+#define THERMOSTAT_ON_COMMAND "on"
+#define THERMOSTAT_OFF_COMMAND "off"
+#define THERMOSTAT_MANUAL_COMMAND "manual"
+#define THERMOSTAT_AUTOMATIC_COMMAND "auto"
+
 class ThermostatWebService : public WebService
 {
   private:
@@ -11,13 +17,13 @@ class ThermostatWebService : public WebService
   protected:
     /*virtual*/ void executeCommand(HttpCommand &command, Client &client)
     {
-        if (isRoute(command.route, "on"))
+        if (isRoute(command.route, THERMOSTAT_ON_COMMAND))
             thermostat.heaterOn();
-        else if (isRoute(command.route, "off"))
+        else if (isRoute(command.route, THERMOSTAT_OFF_COMMAND))
             thermostat.heaterOff();
-        else if (isRoute(command.route, "manual"))
+        else if (isRoute(command.route, THERMOSTAT_MANUAL_COMMAND))
             thermostat.setManualMode(true);
-        else if (isRoute(command.route, "auto"))
+        else if (isRoute(command.route, THERMOSTAT_AUTOMATIC_COMMAND))
             thermostat.setManualMode(false);
 
         JsonResponse response(thermostat);
@@ -36,11 +42,11 @@ class ThermostatWebService : public WebService
     }
     /*virtual*/ bool canExecute(HttpCommand &command)
     {
-        return isRoute(command.route, "") ||
-               isRoute(command.route, "on") ||
-               isRoute(command.route, "off") ||
-               isRoute(command.route, "manual") ||
-               isRoute(command.route, "auto");
+        return isRoute(command.route, THERMOSTAT_INFO_COMMAND) ||
+               isRoute(command.route, THERMOSTAT_ON_COMMAND) ||
+               isRoute(command.route, THERMOSTAT_OFF_COMMAND) ||
+               isRoute(command.route, THERMOSTAT_MANUAL_COMMAND) ||
+               isRoute(command.route, THERMOSTAT_AUTOMATIC_COMMAND);
     }
 };
 

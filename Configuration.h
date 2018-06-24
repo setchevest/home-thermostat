@@ -9,13 +9,13 @@ struct RequestConfig
 {
     const char* host;
     unsigned int port;
-    const char* path;
+    const char* configPath;
+    const char* eventPath;
 };
 
 struct ZoneConfig
 {
     unsigned int id;
-    const char* name;
     uint8_t sensorPin;
     bool hasControl;
 };
@@ -35,7 +35,7 @@ struct ThermostatTemperatureConfig
 
 struct ThermostatConfig
 {
-    unsigned long updateFrequency;
+    unsigned int updateFrequency;
     uint8_t heaterPin;
     size_t zonesQuantity;
     ZoneConfig *zones;

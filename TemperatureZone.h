@@ -13,10 +13,9 @@ class TemperatureZone : Serializable
     TemperatureData data;
 
   public:
-    TemperatureZone(unsigned int id, const char *name, uint8_t sensorPin)
+    TemperatureZone(unsigned int id, uint8_t sensorPin)
         : _id(id), data(TemperatureData(sensorPin)) //,_name(name)
     {
-        
     }
 
     ~TemperatureZone() {}
@@ -33,6 +32,8 @@ class TemperatureZone : Serializable
     bool isTemperatureComfortable(const int min, const int max, const bool isWarming)
     {
         int current = this->data.getHeatIndex();
+        bool res = (!isWarming && current <= min) ? false : (isWarming && current >= max) ? false : true;
+#ifdef LOGGING
         Serial.print(F("Heater: "));
         Serial.print(isWarming ? "ON" : "OFF");
         Serial.print(F("  -Min: "));
@@ -45,9 +46,9 @@ class TemperatureZone : Serializable
         Serial.print(this->data.getTemperature());
         Serial.print(F(" -Hum: "));
         Serial.print(this->data.getHumidity());
-        bool res = (!isWarming && current <= min) ? false : (isWarming && current >= max) ? false : true;
         Serial.print(F("- Is Confortable?: "));
         Serial.println(res ? "YES" : "NO");
+#endif
         return res;
     }
 

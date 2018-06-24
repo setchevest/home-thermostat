@@ -17,12 +17,15 @@ struct HttpCommand
     bool completed = false;
     HttpVerb verb = HttpVerb::Unknown;
     const char *route = "";
-    void printTo(Print &printer){
+    void printTo(Print &printer)
+    {
+#ifdef LOGGING
         printer.print(F("Command: "));
         printer.print(F(" verb "));
-        printer.print(verb == 1? "GET": (verb == 2? "POST" : (verb == 3? "PUT" : "Unknown")));
+        printer.print(verb == 1 ? "GET" : (verb == 2 ? "POST" : (verb == 3 ? "PUT" : "Unknown")));
         printer.print(F(" route /"));
         printer.println(route);
+#endif
     }
 };
 

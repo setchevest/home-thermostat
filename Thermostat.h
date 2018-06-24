@@ -10,7 +10,8 @@
 #include <Common/Environment.h>
 #include <Common/Interfaces/IObserver.h>
 #include <Ethernet.h>
-#include <HttpClient.h>
+#include <IO/JsonResponse.h>
+// #include <HttpClient.h>
 
 using namespace Configuration;
 
@@ -30,16 +31,14 @@ private:
   const unsigned int kNetworkDelay = 200;
   void getDataFromSensors();
   void check();
-  void getConfigFromServer();
   void cleanup();
+  void invalidateHeaterStatus();
 
 public:
   Thermostat(RequestConfig &server_);
   ~Thermostat();
   void init(ThermostatConfig config);
-  void addZone(ZoneConfig &zoneConfig);
   void toJson(JsonObject &root);
-  void invalidateHeaterStatus();
   void toggleHeater();
   void heaterOn();
   void heaterOff();

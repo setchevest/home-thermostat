@@ -9,6 +9,8 @@
 #define JSON_BUFFER_SIZE 130
 #endif
 
+#define JSON_CONTENTTYPE "Content-Type: application/json"
+
 class JsonResponse : public WebResponse
 {
 private:
@@ -18,7 +20,7 @@ private:
 protected:
   /*virtual*/ const char *getContentType()
   {
-    return "Content-Type: application/json";
+    return JSON_CONTENTTYPE;
   }
 
   /*virtual*/ void addBody(Client &client)

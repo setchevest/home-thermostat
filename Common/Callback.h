@@ -55,8 +55,8 @@ class CallableFromLambda : public Callable<result>
     Lambda &&l;
 
   public:
-    CallableFromLambda(Lambda&& lambda) 
-    : l(lambda) {}
+    CallableFromLambda(Lambda &&lambda)
+        : l(lambda) {}
 
     result operator()()
     {
@@ -64,24 +64,27 @@ class CallableFromLambda : public Callable<result>
     }
 };
 
-template<typename result>
+template <typename result>
 class NotCallable : public Callable<result>
 {
-    public:
-    NotCallable(){}
+  public:
+    NotCallable() {}
     result operator()()
     {
+#ifdef LOGGING
         Serial.println(F("Calling a Not Callable object. Please review your code"));
+#endif
         return 0;
     }
 };
 
 // wraps pointer-to-functions or pointer-to-static-members
-template<typename result>
+template <typename result>
 class CallableFromFunction : public Callable<result>
 {
-private:
+  private:
     result (*f)();
+
   public:
     CallableFromFunction(result (*function)())
         : f(function) {}
@@ -94,7 +97,7 @@ private:
 
 // generic wrapper for any callable
 // this is the only class which is exposed to the user
-template<typename result>
+template <typename result>
 class Callback : public Callable<result>
 {
   private:
@@ -103,11 +106,12 @@ class Callback : public Callable<result>
   public:
     Callback() : c(*new NotCallable<result>()) {}
     template <class C>
-    Callback(C &object, result (C::*method)()) : c(*new CallableFromObject<C,result>(object, method)) {}
-    template<typename Lambda>
-    Callback(Lambda&& lambda) : c(*new CallableFromLambda<Lambda, result>(lambda)) { }
+    Callback(C &object, result (C::*method)()) : c(*new CallableFromObject<C, result>(object, method)) {}
+    template <typename Lambda>
+    Callback(Lambda &&lambda) : c(*new CallableFromLambda<Lambda, result>(lambda)) {}
     explicit Callback(result (*function)()) : c(*new CallableFromFunction<result>(function)) {}
-    virtual result operator()()
+    
+    result operator()()
     {
         return c();
     }

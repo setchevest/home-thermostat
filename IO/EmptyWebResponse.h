@@ -3,6 +3,8 @@
 
 #include <IO/WebResponse.h>
 
+#define TEXTPLAIN_CONTENTTYOE "Content-Type: text/plain"
+
 class EmptyWebResponse : public WebResponse
 {
   public:
@@ -14,7 +16,7 @@ class EmptyWebResponse : public WebResponse
 
     /*virtual*/ const char* getContentType()
     {
-        return "Content-Type: text/plain";
+        return TEXTPLAIN_CONTENTTYOE;
     }
 
     /*virtual*/ void addBody(Client &client)

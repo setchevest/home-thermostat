@@ -23,13 +23,17 @@ void Thermostat::cleanup()
 void Thermostat::init(ThermostatConfig _config)
 {
     config = _config;
+#ifdef LOGGING
     Serial.println(F("Initializing Thermostat"));
+#endif
     cleanup();
-    timer = new Timer(*new Callback<void>(*this, &Thermostat::check), config.updateFrequency);
+    timer = new Timer(*new Callback<void>(*this, &Thermostat::check), config.updateFrequency * 1000);
     heater = new HeaterController(config);
     for (size_t i = 0; i < config.zonesQuantity; i++)
     {
-        addZone(config.zones[i]);
+        zoneList->add(new TemperatureZone(config.zones[i].id, config.zones[i].sensorPin));
+        if (config.zones[i].hasControl)
+            controlZoneId = config.zones[i].id;
     }
     check();
 }
@@ -42,21 +46,19 @@ void Thermostat::check()
 
 void Thermostat::getDataFromSensors()
 {
+#ifdef LOGGING
     Serial.println(F("Getting data from Sensors"));
+#endif
     if (zoneList)
     {
         for (size_t i = 0; i < zoneList->size(); i++)
         {
-            zoneList->get(i)->updateStatus();
+            if (zoneList->get(i)->updateStatus())
+            {
+                //Let the server know about this change (out of memory :()
+            }
         }
     }
-}
-
-void Thermostat::addZone(ZoneConfig &zoneConfig)
-{
-    zoneList->add(new TemperatureZone(zoneConfig.id, zoneConfig.name, zoneConfig.sensorPin));
-    if (zoneConfig.hasControl)
-        controlZoneId = zoneConfig.id;
 }
 
 void Thermostat::toJson(JsonObject &root)
@@ -76,9 +78,9 @@ void Thermostat::invalidateHeaterStatus()
     {
         if (controlZoneId == zoneList->get(i)->getId())
         {
-            if(!zoneList->get(i)->isTemperatureComfortable(config.threshold.min, config.threshold.max, heater->getStatus()))
+            if (!zoneList->get(i)->isTemperatureComfortable(config.threshold.min, config.threshold.max, heater->getStatus()))
                 toggleHeater();
-            
+
             break;
         }
     }
@@ -105,70 +107,4 @@ void Thermostat::heaterOff()
 void Thermostat::setManualMode(bool manualModeEnabled_)
 {
     manualModeEnabled = manualModeEnabled_;
-}
-
-void Thermostat::getConfigFromServer()
-{
-    int err = 0;
-    EthernetClient c;
-    HttpClient http(c);
-    Serial.print(F("Calling server: "));
-    Serial.print(server.host);
-    Serial.print(F(":"));
-    Serial.print(server.port);
-    Serial.println(server.path);
-    err = http.get(server.host, server.port, server.path);
-    if (err == 0)
-    {
-        err = http.responseStatusCode();
-        if (err >= 0)
-        {
-            // Usually you'd check that the response code is 200 or a
-            // similar "success" code (200-299) before carrying on,
-            // but we'll print out whatever response we get
-
-            err = http.skipResponseHeaders();
-            if (err >= 0)
-            {
-                int bodyLen = http.contentLength();
-                // Now we've got to the body, so we can print it out
-                unsigned long timeoutStart = millis();
-                char c;
-                // Whilst we haven't timed out & haven't reached the end of the body
-                while ((http.connected() || http.available()) &&
-                       ((millis() - timeoutStart) < kNetworkTimeout))
-                {
-                    if (http.available())
-                    {
-                        c = http.read();
-                        // Print out this character
-                        Serial.print(c);
-                        // We read something, reset the timeout counter
-                        timeoutStart = millis();
-                    }
-                    else
-                    {
-                        // We haven't got any data, so let's pause to allow some to arrive
-                        delay(kNetworkDelay);
-                    }
-                }
-            }
-            else
-            {
-                Serial.print(F("Failed to skip response headers: "));
-                Serial.println(err);
-            }
-        }
-        else
-        {
-            Serial.print(F("Getting response failed: "));
-            Serial.println(err);
-        }
-    }
-    else
-    {
-        Serial.print(F("Connect failed: "));
-        Serial.println(err);
-    }
-    http.stop();
 }

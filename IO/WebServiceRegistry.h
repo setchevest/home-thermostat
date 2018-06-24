@@ -44,14 +44,15 @@ class WebServiceRegistry
 
         return defaultService;
     }
-    
 
     void registerService(WebService *service)
     {
         if (servicesQty + 1 <= MAX_SERVICES)
             services[servicesQty++] = service;
+#ifdef LOGGING
         else
             Serial.println(F("To many services registered. Please increase array size to do so."));
+#endif
     }
 
     void reset()

@@ -1,6 +1,7 @@
+#define LOGGING
+
 #ifndef EthernetClient_h
 #define EthernetClient_h
-#include <SPI.h>
 #include <Ethernet.h>
 #include <Common/Serializable.h>
 #include <Common/Interfaces/IObserver.h>
@@ -22,12 +23,16 @@ class EthernetCommandHandler : public IObserver
         // listen for incoming client
         if (client)
         {
+#ifdef LOGGING
             Serial.println(F("Client connected"));
+#endif
             HttpCommand command = parser.parse(client);
             Environment::printDiagnosticData(Serial);
             WebServiceRegistry::getInstance().getService(command)->processRequest(command, client);
             Environment::printDiagnosticData(Serial);
+#ifdef LOGGING
             Serial.println(F("Client disconnected"));
+#endif
         }
     }
 
@@ -35,25 +40,39 @@ class EthernetCommandHandler : public IObserver
     EthernetCommandHandler(Configuration::EthernetConfiguration &_config, HttpCommandParser &parser_)
         : config(_config), server(_config.port), parser(parser_) {}
 
-    ~EthernetCommandHandler() {}
+    ~EthernetCommandHandler() 
+    {
+        // delete server;
+    }
 
     void init()
     {
-        // Start the Ethernet connection and the server
+// Start the Ethernet connection and the server
+#ifdef DHCP_ENABLED
+#ifdef LOGGING
         Serial.println(F("Start configuration using DHCP"));
+#endif
         if (Ethernet.begin(config.defaultMac) == 0)
         {
+#ifdef LOGGING
             Serial.println(F("Failed to configure Ethernet using DHCP"));
+#endif
             // no point in carrying on, so do nothing forevermore:
             // try to congifure using IP address instead of DHCP:
             Ethernet.begin(config.defaultMac, IPAddress(config.defaultIp[0], config.defaultIp[1], config.defaultIp[2], config.defaultIp[3]));
         }
+#else
+        Ethernet.begin(config.defaultMac, IPAddress(config.defaultIp[0], config.defaultIp[1], config.defaultIp[2], config.defaultIp[3]));
+#endif
+        // server = new EthernetServer(config.port);
         server.begin();
+#ifdef LOGGING
         Serial.print(F("server is at "));
         Serial.print(F("http://"));
         Serial.print(Ethernet.localIP());
         Serial.print(F(":"));
         Serial.println(config.port);
+#endif
         TickNotifier::getInstance().attach(this);
     }
 

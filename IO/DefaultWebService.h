@@ -8,7 +8,7 @@ class DefaultWebService : public WebService
   protected:
     /*virtual*/ void executeCommand(HttpCommand &command, Client &client)
     {
-        EmptyWebResponse response("Error. No callback registered. Default response.");
+        EmptyWebResponse response("Wrong command.");
         response.flush(client);
     }
 
