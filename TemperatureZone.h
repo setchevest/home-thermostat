@@ -3,7 +3,6 @@
 
 #include <Common/Serializable.h>
 #include <TemperatureData.h>
-#include <Common/Environment.h>
 
 class TemperatureZone : Serializable
 {
@@ -34,19 +33,19 @@ class TemperatureZone : Serializable
         int current = this->data.getHeatIndex();
         bool res = (!isWarming && current <= min) ? false : (isWarming && current >= max) ? false : true;
 #ifdef LOGGING
-        Serial.print(F("Heater: "));
+        Serial.print("Heater: ");
         Serial.print(isWarming ? "ON" : "OFF");
-        Serial.print(F("  -Min: "));
+        Serial.print("  -Min: ");
         Serial.print(min);
-        Serial.print(F(" -Max: "));
+        Serial.print(" -Max: ");
         Serial.print(max);
-        Serial.print(F(" -HeatIndex: "));
+        Serial.print(" -HeatIndex: ");
         Serial.print(current);
-        Serial.print(F(" -Temp: "));
+        Serial.print(" -Temp: ");
         Serial.print(this->data.getTemperature());
-        Serial.print(F(" -Hum: "));
+        Serial.print(" -Hum: ");
         Serial.print(this->data.getHumidity());
-        Serial.print(F("- Is Confortable?: "));
+        Serial.print("- Is Confortable?: ");
         Serial.println(res ? "YES" : "NO");
 #endif
         return res;

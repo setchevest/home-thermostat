@@ -1,5 +1,3 @@
-#define LOGGING
-
 #ifndef EthernetClient_h
 #define EthernetClient_h
 #include <Ethernet.h>

@@ -31,8 +31,8 @@ class ThermostatWebService : public WebService
     }
 
   public:
-    ThermostatWebService(Thermostat &thermostat_) : WebService(),
-                                                    thermostat(thermostat_)
+    ThermostatWebService(Thermostat &thermostat_) 
+        : WebService(),thermostat(thermostat_)
 
     {
     }

@@ -25,7 +25,18 @@ struct EthernetConfiguration
     byte defaultMac[6];
     unsigned int defaultIp[4];
     unsigned int port;
+    unsigned int gateway[4];
+    unsigned int subnet[4];
 };
+
+struct WifiNetworkConfiguration
+{
+    const char *ssid;
+    const char *pass;
+    const char *deviceName;
+};
+
+
 
 struct ThermostatTemperatureConfig
 {

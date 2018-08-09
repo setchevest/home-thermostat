@@ -6,7 +6,7 @@
 #include <IO/WebResponse.h>
 
 #ifndef JSON_BUFFER_SIZE
-#define JSON_BUFFER_SIZE 130
+#define JSON_BUFFER_SIZE 200
 #endif
 
 #define JSON_CONTENTTYPE "Content-Type: application/json"

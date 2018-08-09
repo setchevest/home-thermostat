@@ -1,5 +1,4 @@
-//#define LOGGING
-
+// #define DHCP_ENABLED true
 #include <Thermostat.h>
 #include <Configuration.h>
 #include <IO/EthernetCommandHandler.h>
@@ -7,7 +6,7 @@
 #include <IO/WebServiceRegistry.h>
 #include <ThermostatWebService.h>
 
-Configuration::RequestConfig server = {"192.168.0.13", 8080, "/api/thermostat/config", ""}; //Server Configuration
+Configuration::RequestConfig server = {"192.168.0.15", 8080, "/api/thermostat/config", ""}; //Server Configuration
 
 Configuration::ThermostatConfig tc = {10 /*updateFrequency*/, 7, /*Relay pin*/
                                       1,                         /*zones Quantity*/
@@ -16,7 +15,7 @@ Configuration::ThermostatConfig tc = {10 /*updateFrequency*/, 7, /*Relay pin*/
 //using default instance;
 Configuration::EthernetConfiguration ec = {
     {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xEE}, //Defaul MacAddress
-    {192, 168, 0, 4},                     //Default Ip In Case DNS is not working
+    {192, 168, 0, 50},                     //Default Ip In Case DNS is not working
     80                                    //Port to listen
 };
 Thermostat *thermo;

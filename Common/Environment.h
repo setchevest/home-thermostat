@@ -1,7 +1,11 @@
 #ifndef Environment_h
 #define Environment_h
-#include <Arduino.h>
+
 #include <Common/interfaces/IObserver.h>
+#ifdef ESP8266
+#include <ESP8266WiFi.h>
+#else
+#include <Arduino.h>
 
 #ifdef __arm__
 // should use uinstd.h to define sbrk but Due causes a conflict
@@ -10,9 +14,17 @@ extern "C" char *sbrk(int incr);
 extern char *__brkval;
 #endif // __arm__
 
+#endif
+
 namespace Environment
 {
 
+#ifdef ESP8266
+static unsigned int getFreeMemory()
+{
+    return ESP.getFreeHeap();
+}
+#else
 static unsigned int getFreeMemory()
 {
     char top;
@@ -24,7 +36,7 @@ static unsigned int getFreeMemory()
     return __brkval ? &top - __brkval : &top - __malloc_heap_start;
 #endif // __arm__
 }
-
+#endif // ESP
 static void printDiagnosticData(Print &p)
 {
 #ifdef LOGGING
