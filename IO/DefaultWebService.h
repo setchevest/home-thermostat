@@ -12,10 +12,24 @@ class DefaultWebService : public WebService
         response.flush(client);
     }
 
+    /*virtual*/ void executeMessage(char *topic, byte *payload, unsigned int length)
+    {
+#ifdef LOGGING
+        Serial.print(topic);
+        Serial.print(F(" - "));
+        Serial.println(F("No action to be executed."));
+#endif
+    }
+
   public:
     DefaultWebService(/* args */) : WebService() {}
-    
+
     /*virtual*/ bool canExecute(HttpCommand &command)
+    {
+        return true;
+    }
+
+    /*virtual*/ bool canExecute(const char *topic)
     {
         return true;
     }

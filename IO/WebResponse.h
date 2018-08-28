@@ -32,7 +32,7 @@ struct HttpCommand
 class WebResponse
 {
   protected:
-    virtual void addHeader(Client &client)
+    virtual void addHeader(Print &client)
     {
         // send a standard http response header
         client.println(F("HTTP/1.1 200 OK"));
@@ -41,7 +41,7 @@ class WebResponse
         client.println();                       // end of HTTP header
     }
 
-    virtual void addBody(Client &client) = 0;
+    virtual void addBody(Print &client) = 0;
 
     virtual const char *getContentType() = 0;
 
@@ -50,11 +50,18 @@ class WebResponse
     ~WebResponse() {}
 
     //Template Method
-    void flush(Client &client)
+    void flush(Print &client)
     {
         addHeader(client);
         addBody(client);
     }
+
+    //Template Method
+    void bodyFlush(Print &client)
+    {
+        addBody(client);
+    }
+
 };
 
 #endif

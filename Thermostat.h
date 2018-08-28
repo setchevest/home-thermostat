@@ -9,6 +9,7 @@
 #include <Common/Serializable.h>
 #include <Common/Environment.h>
 #include <Common/Interfaces/IObserver.h>
+#include <Common/Interfaces/INotifier.h>
 #include <Ethernet.h>
 #include <IO/JsonResponse.h>
 // #include <HttpClient.h>
@@ -21,8 +22,8 @@ private:
   HeaterController *heater = nullptr;
   IList<TemperatureZone *> *zoneList = nullptr;
   Timer *timer = nullptr;
+  INotifier &notifier;
   ThermostatConfig config;
-  RequestConfig &server;
   bool manualModeEnabled = true;
   int controlZoneId = -1;
   // Number of milliseconds to wait without receiving any data before we give up
@@ -33,9 +34,10 @@ private:
   void check();
   void cleanup();
   void invalidateHeaterStatus();
+  void notifyChange();
 
 public:
-  Thermostat(RequestConfig &server_);
+  Thermostat(INotifier &notifier_);
   ~Thermostat();
   void init(ThermostatConfig config);
   void toJson(JsonObject &root);

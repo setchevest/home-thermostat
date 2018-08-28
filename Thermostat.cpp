@@ -2,8 +2,8 @@
 
 using namespace Configuration;
 
-Thermostat::Thermostat(RequestConfig &server_)
-    : server(server_), zoneList(new ZoneList())
+Thermostat::Thermostat(INotifier &notifier_)
+    :notifier(notifier_), zoneList(new ZoneList())
 {
 }
 
@@ -55,10 +55,15 @@ void Thermostat::getDataFromSensors()
         {
             if (zoneList->get(i)->updateStatus())
             {
-                //Let the server know about this change (out of memory :()
+                notifyChange();
             }
         }
     }
+}
+
+void Thermostat::notifyChange()
+{
+    notifier.publishData("/status", *this);
 }
 
 void Thermostat::toJson(JsonObject &root)
@@ -89,22 +94,35 @@ void Thermostat::invalidateHeaterStatus()
 void Thermostat::toggleHeater()
 {
     if (heater)
+    {
         heater->toggle();
+        notifyChange();
+    }
+        
 }
 
 void Thermostat::heaterOn()
 {
     if (heater)
+    {
         heater->on();
+        notifyChange();
+    }
+        
 }
 
 void Thermostat::heaterOff()
 {
     if (heater)
+    {
         heater->off();
+        notifyChange();
+    }
+        
 }
 
 void Thermostat::setManualMode(bool manualModeEnabled_)
 {
     manualModeEnabled = manualModeEnabled_;
+    notifyChange();
 }

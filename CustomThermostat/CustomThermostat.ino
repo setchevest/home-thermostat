@@ -6,7 +6,7 @@
 #include <IO/WebServiceRegistry.h>
 #include <ThermostatWebService.h>
 
-Configuration::RequestConfig server = {"192.168.0.15", 8080, "/api/thermostat/config", ""}; //Server Configuration
+Configuration::ServerConfig server;
 
 Configuration::ThermostatConfig tc = {10 /*updateFrequency*/, 7, /*Relay pin*/
                                       1,                         /*zones Quantity*/
@@ -26,7 +26,7 @@ void setup()
 #ifdef LOGGING
   Serial.begin(115200);
 #endif
-  thermo = new Thermostat(server);
+  thermo = new Thermostat();
   ethernetHandler = new EthernetCommandHandler(ec, parser);
   WebServiceRegistry::getInstance().registerService(new ThermostatWebService(*thermo));
   ethernetHandler->init();

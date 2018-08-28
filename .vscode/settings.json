@@ -47,7 +47,8 @@
         "ratio": "cpp",
         "system_error": "cpp",
         "type_traits": "cpp",
-        "hashtable": "cpp"
+        "hashtable": "cpp",
+        "cstring": "cpp"
     },
     "C_Cpp.intelliSenseEngineFallback": "Enabled"
 }

@@ -5,12 +5,15 @@
 namespace Configuration
 {
 
-struct RequestConfig
+struct ServerConfig
 {
-    const char* host;
-    unsigned int port;
-    const char* configPath;
-    const char* eventPath;
+    const char* host = "192.168.0.7";
+    unsigned int port = 1883;
+    const char* configPath = "/api/thermostat/config";
+    const char* eventPath = "";
+    const char* deviceId = "Home Thermostat 2";
+    const char* topicIn = "device/in";
+    const char* topicOut = "device/out";
 };
 
 struct ZoneConfig
@@ -22,21 +25,19 @@ struct ZoneConfig
 
 struct EthernetConfiguration
 {
-    byte defaultMac[6];
-    unsigned int defaultIp[4];
-    unsigned int port;
-    unsigned int gateway[4];
-    unsigned int subnet[4];
+    byte defaultMac[6] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xEE};
+    unsigned int defaultIp[4] = {192, 168, 0, 41};
+    unsigned int port = 80;
+    unsigned int gateway[4] = {192, 168, 0, 1};
+    unsigned int subnet[4] = {255, 255, 255, 0};
 };
 
-struct WifiNetworkConfiguration
+struct WifiNetworkConfiguration : EthernetConfiguration
 {
-    const char *ssid;
-    const char *pass;
-    const char *deviceName;
+    const char *ssid = "Globant";
+    const char *pass = "globant\sebastian.etchevest";
+    const char *deviceName = "Thermostat";
 };
-
-
 
 struct ThermostatTemperatureConfig
 {

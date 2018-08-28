@@ -23,7 +23,7 @@ protected:
     return JSON_CONTENTTYPE;
   }
 
-  /*virtual*/ void addBody(Client &client)
+  /*virtual*/ void addBody(Print &client)
   {
     JsonObject &root = jsonBuffer.createObject();
     body.toJson(root);

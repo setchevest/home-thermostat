@@ -14,20 +14,29 @@ class ThermostatWebService : public WebService
   private:
     Thermostat &thermostat;
 
+    void run(const char *topic)
+    {
+        if (isRoute(topic, THERMOSTAT_ON_COMMAND))
+            thermostat.heaterOn();
+        else if (isRoute(topic, THERMOSTAT_OFF_COMMAND))
+            thermostat.heaterOff();
+        else if (isRoute(topic, THERMOSTAT_MANUAL_COMMAND))
+            thermostat.setManualMode(true);
+        else if (isRoute(topic, THERMOSTAT_AUTOMATIC_COMMAND))
+            thermostat.setManualMode(false);
+    }
+
   protected:
     /*virtual*/ void executeCommand(HttpCommand &command, Client &client)
     {
-        if (isRoute(command.route, THERMOSTAT_ON_COMMAND))
-            thermostat.heaterOn();
-        else if (isRoute(command.route, THERMOSTAT_OFF_COMMAND))
-            thermostat.heaterOff();
-        else if (isRoute(command.route, THERMOSTAT_MANUAL_COMMAND))
-            thermostat.setManualMode(true);
-        else if (isRoute(command.route, THERMOSTAT_AUTOMATIC_COMMAND))
-            thermostat.setManualMode(false);
-
+        run(command.route);
         JsonResponse response(thermostat);
         response.flush(client);
+    }
+
+    /*virtual*/ void executeMessage(char *topic, byte *payload, unsigned int length)
+    {
+        run(topic);
     }
 
   public:
@@ -42,11 +51,16 @@ class ThermostatWebService : public WebService
     }
     /*virtual*/ bool canExecute(HttpCommand &command)
     {
-        return isRoute(command.route, THERMOSTAT_INFO_COMMAND) ||
-               isRoute(command.route, THERMOSTAT_ON_COMMAND) ||
-               isRoute(command.route, THERMOSTAT_OFF_COMMAND) ||
-               isRoute(command.route, THERMOSTAT_MANUAL_COMMAND) ||
-               isRoute(command.route, THERMOSTAT_AUTOMATIC_COMMAND);
+        return canExecute(command.route);
+    }
+
+    bool canExecute(const char *command)
+    {
+        return isRoute(command, THERMOSTAT_INFO_COMMAND) ||
+               isRoute(command, THERMOSTAT_ON_COMMAND) ||
+               isRoute(command, THERMOSTAT_OFF_COMMAND) ||
+               isRoute(command, THERMOSTAT_MANUAL_COMMAND) ||
+               isRoute(command, THERMOSTAT_AUTOMATIC_COMMAND);
     }
 };
 
