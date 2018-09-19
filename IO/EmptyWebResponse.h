@@ -1,14 +1,14 @@
 #ifndef EmptyWebResponse_h
 #define EmptyWebResponse_h
 
-#include <IO/WebResponse.h>
+#include <IO/ActionResponse.h>
 
 #define TEXTPLAIN_CONTENTTYPE "Content-Type: text/plain"
 
-class EmptyWebResponse : public WebResponse
+class EmptyWebResponse : public ActionResponse
 {
   public:
-    EmptyWebResponse(const char* responseBody_ = "") : WebResponse(), responseBody(responseBody_) {}
+    EmptyWebResponse(const char* responseBody_ = "") : ActionResponse(), responseBody(responseBody_) {}
     ~EmptyWebResponse() {}
 
   protected:

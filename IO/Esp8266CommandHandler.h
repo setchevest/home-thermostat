@@ -30,6 +30,8 @@ class Esp8266CommandHandler : public IObserver
         WiFiClient c = server.client();
 
         WebServiceRegistry::getInstance().getService(command)->processRequest(command, c);
+        delay(2);      //let browser get the info.
+        c.stop(); //Close the connection
     }
 
   public:

@@ -19,7 +19,7 @@ bool TemperatureData::updateData()
     // Read temperature as Celsius (the default)
     int temp = dhtSensor.readTemperature();
     // Check if any reads failed and exit early (to try again).
-    if (isnan(temp) || isnan(hum))
+    if (isnan(temp) || isnan(hum) || temp > 50 || hum > 100 )
         return hasChanges;
     
     if(hum!= humidity || temp != temperature)

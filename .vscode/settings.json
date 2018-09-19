@@ -48,7 +48,8 @@
         "system_error": "cpp",
         "type_traits": "cpp",
         "hashtable": "cpp",
-        "cstring": "cpp"
+        "cstring": "cpp",
+        "cstddef": "cpp"
     },
     "C_Cpp.intelliSenseEngineFallback": "Enabled"
 }

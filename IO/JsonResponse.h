@@ -3,19 +3,18 @@
 
 #include <Ethernet.h>
 #include <Common/Serializable.h>
-#include <IO/WebResponse.h>
+#include <IO/ActionResponse.h>
 
 #ifndef JSON_BUFFER_SIZE
-#define JSON_BUFFER_SIZE 200
+#define JSON_BUFFER_SIZE 300
 #endif
 
 #define JSON_CONTENTTYPE "Content-Type: application/json"
 
-class JsonResponse : public WebResponse
+class JsonResponse : public ActionResponse
 {
 private:
   Serializable &body;
-  StaticJsonBuffer<JSON_BUFFER_SIZE> jsonBuffer;
 
 protected:
   /*virtual*/ const char *getContentType()
@@ -25,13 +24,14 @@ protected:
 
   /*virtual*/ void addBody(Print &client)
   {
+    StaticJsonBuffer<JSON_BUFFER_SIZE> jsonBuffer;
     JsonObject &root = jsonBuffer.createObject();
     body.toJson(root);
     root.printTo(client);
   }
 
 public:
-  JsonResponse(Serializable &body_) : body(body_), WebResponse() {}
+  JsonResponse(Serializable &body_) : body(body_), ActionResponse() {}
   ~JsonResponse() {}
 };
 

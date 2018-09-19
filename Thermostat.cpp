@@ -1,5 +1,5 @@
 #include <Thermostat.h>
-
+#define LOGGING
 using namespace Configuration;
 
 Thermostat::Thermostat(INotifier &notifier_)
@@ -36,6 +36,7 @@ void Thermostat::init(ThermostatConfig _config)
             controlZoneId = config.zones[i].id;
     }
     check();
+    notifier.publishAttributes(*this);
 }
 void Thermostat::check()
 {
@@ -55,26 +56,25 @@ void Thermostat::getDataFromSensors()
         {
             if (zoneList->get(i)->updateStatus())
             {
-                notifyChange();
+                notifyChange(*zoneList->get(i));
             }
         }
     }
 }
 
-void Thermostat::notifyChange()
+void Thermostat::notifyChange(Serializable & data)
 {
-    notifier.publishData("/status", *this);
+    notifier.publishTelemetry(data);
 }
 
 void Thermostat::toJson(JsonObject &root)
 {
     root["fm"] = Environment::getFreeMemory();
     root["lu"] = (Environment::getNowInMilliseconds() - timer->getLastRunInMilliseconds()) / 1000;
-    root["mode"] = manualModeEnabled ? "Manual" : "Automatic";
-    heater->toJson(root.createNestedObject("heater"));
-    JsonArray &jsonZones = root.createNestedArray("zones");
+    root["mode"] = manualModeEnabled ? "M" : "A";
+    heater->toJson(root);
     for (size_t i = 0; i < zoneList->size(); i++)
-        zoneList->get(i)->toJson(jsonZones.createNestedObject());
+        zoneList->get(i)->toJson(root);
 }
 
 void Thermostat::invalidateHeaterStatus()
@@ -96,7 +96,7 @@ void Thermostat::toggleHeater()
     if (heater)
     {
         heater->toggle();
-        notifyChange();
+        notifyChange(*heater);
     }
         
 }
@@ -106,7 +106,7 @@ void Thermostat::heaterOn()
     if (heater)
     {
         heater->on();
-        notifyChange();
+        notifyChange(*heater);
     }
         
 }
@@ -116,7 +116,7 @@ void Thermostat::heaterOff()
     if (heater)
     {
         heater->off();
-        notifyChange();
+        notifyChange(*heater);
     }
         
 }
@@ -124,5 +124,10 @@ void Thermostat::heaterOff()
 void Thermostat::setManualMode(bool manualModeEnabled_)
 {
     manualModeEnabled = manualModeEnabled_;
-    notifyChange();
+    notifyChange(*this);
+}
+
+void Thermostat::toggleMode()
+{
+    setManualMode(!manualModeEnabled);
 }

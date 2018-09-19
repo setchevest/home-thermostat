@@ -3,45 +3,45 @@
 #include <IO/WebService.h>
 #include <IO/JsonResponse.h>
 
-#define THERMOSTAT_INFO_COMMAND ""
-#define THERMOSTAT_ON_COMMAND "on"
-#define THERMOSTAT_OFF_COMMAND "off"
-#define THERMOSTAT_MANUAL_COMMAND "manual"
-#define THERMOSTAT_AUTOMATIC_COMMAND "auto"
+#define THERMOSTAT_INFO_COMMAND "getStatus"
+#define THERMOSTAT_HEATER_COMMAND "setHeater"
+#define THERMOSTAT_MODE_COMMAND "setMode"
 
 class ThermostatWebService : public WebService
 {
   private:
     Thermostat &thermostat;
 
-    void run(const char *topic)
+    void run(HttpCommand &command)
     {
-        if (isRoute(topic, THERMOSTAT_ON_COMMAND))
-            thermostat.heaterOn();
-        else if (isRoute(topic, THERMOSTAT_OFF_COMMAND))
-            thermostat.heaterOff();
-        else if (isRoute(topic, THERMOSTAT_MANUAL_COMMAND))
-            thermostat.setManualMode(true);
-        else if (isRoute(topic, THERMOSTAT_AUTOMATIC_COMMAND))
-            thermostat.setManualMode(false);
+        if (isRoute(command.route, THERMOSTAT_HEATER_COMMAND))
+        {
+            if(memcmp(command.params, "t", 1) == 0)
+                thermostat.heaterOn();
+            else
+                thermostat.heaterOff();
+        }
+        else if (isRoute(command.route, THERMOSTAT_MODE_COMMAND))
+        {
+            if(memcmp(command.params, "a", 1) == 0)
+                thermostat.setManualMode(false);
+            else
+                thermostat.setManualMode(true);
+        }
     }
 
   protected:
-    /*virtual*/ void executeCommand(HttpCommand &command, Client &client)
+    /*virtual*/ ActionResponse & executeCommand(HttpCommand &command)
     {
-        run(command.route);
-        JsonResponse response(thermostat);
-        response.flush(client);
-    }
-
-    /*virtual*/ void executeMessage(char *topic, byte *payload, unsigned int length)
-    {
-        run(topic);
+        run(command);
+        static JsonResponse response(thermostat);
+        Serial.println();
+        return response;
     }
 
   public:
     ThermostatWebService(Thermostat &thermostat_) 
-        : WebService(),thermostat(thermostat_)
+        : WebService(), thermostat(thermostat_) 
 
     {
     }
@@ -57,10 +57,8 @@ class ThermostatWebService : public WebService
     bool canExecute(const char *command)
     {
         return isRoute(command, THERMOSTAT_INFO_COMMAND) ||
-               isRoute(command, THERMOSTAT_ON_COMMAND) ||
-               isRoute(command, THERMOSTAT_OFF_COMMAND) ||
-               isRoute(command, THERMOSTAT_MANUAL_COMMAND) ||
-               isRoute(command, THERMOSTAT_AUTOMATIC_COMMAND);
+               isRoute(command, THERMOSTAT_HEATER_COMMAND) ||
+               isRoute(command, THERMOSTAT_MODE_COMMAND);
     }
 };
 

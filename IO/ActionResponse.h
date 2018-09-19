@@ -17,19 +17,23 @@ struct HttpCommand
     bool completed = false;
     HttpVerb verb = HttpVerb::Unknown;
     const char *route = "";
+    const char *params = "";
+    
     void printTo(Print &printer)
     {
 #ifdef LOGGING
         printer.print(F("Command: "));
         printer.print(F(" verb "));
         printer.print(verb == 1 ? "GET" : (verb == 2 ? "POST" : (verb == 3 ? "PUT" : "Unknown")));
-        printer.print(F(" route /"));
+        printer.print(F(" method: "));
         printer.println(route);
+        printer.print(F(" params: "));
+        printer.println(params);
 #endif
     }
 };
 
-class WebResponse
+class ActionResponse
 {
   protected:
     virtual void addHeader(Print &client)
@@ -46,8 +50,8 @@ class WebResponse
     virtual const char *getContentType() = 0;
 
   public:
-    WebResponse() {}
-    ~WebResponse() {}
+    ActionResponse() {}
+    ~ActionResponse() {}
 
     //Template Method
     void flush(Print &client)

@@ -4,7 +4,7 @@
 #include <Common/Serializable.h>
 #include <TemperatureData.h>
 
-class TemperatureZone : Serializable
+class TemperatureZone : public Serializable
 {
   private:
     unsigned int _id;

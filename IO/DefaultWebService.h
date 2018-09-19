@@ -5,31 +5,19 @@
 
 class DefaultWebService : public WebService
 {
-  protected:
-    /*virtual*/ void executeCommand(HttpCommand &command, Client &client)
-    {
-        EmptyWebResponse response("Wrong command.");
-        response.flush(client);
-    }
+  private:
 
-    /*virtual*/ void executeMessage(char *topic, byte *payload, unsigned int length)
+  protected:
+    /*virtual*/ ActionResponse &executeCommand(HttpCommand &command)
     {
-#ifdef LOGGING
-        Serial.print(topic);
-        Serial.print(F(" - "));
-        Serial.println(F("No action to be executed."));
-#endif
+        static EmptyWebResponse response("Wrong command.");
+        return response;
     }
 
   public:
     DefaultWebService(/* args */) : WebService() {}
 
     /*virtual*/ bool canExecute(HttpCommand &command)
-    {
-        return true;
-    }
-
-    /*virtual*/ bool canExecute(const char *topic)
     {
         return true;
     }

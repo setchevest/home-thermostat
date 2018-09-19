@@ -4,11 +4,13 @@
 
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
+#include <Common/StringPrint.h>
 #include <Common/Serializable.h>
 #include <Common/Interfaces/IObserver.h>
 #include <Common/Interfaces/INotifier.h>
 #include <Configuration.h>
 #include <IO/WebServiceRegistry.h>
+#include <IO/MqttCommandParser.h>
 #include <PubSubClient.h>
 #include <Common/Serializable.h>
 
@@ -18,26 +20,16 @@ class MqttCommandHandler : public IObserver, public INotifier
   private:
     Configuration::WifiNetworkConfiguration &wifiConfig;
     Configuration::ServerConfig &serverConfig;
+    MqttCommandParser &parser;
     PubSubClient pubSubClient;
     WiFiClient wifiClient;
     long lastReconnectAttempt = 0;
 
-    void getInfo(String &data)
-    {
-        StaticJsonBuffer<400> jsonBuffer;
-        JsonObject &root = jsonBuffer.createObject();
-        root["timestamp"] = millis();
-        JsonObject &payload = root.createNestedObject("payload");
-        payload["id"] = serverConfig.deviceId;
-        payload["topic"] = serverConfig.topicIn;
-        root.printTo(data);
-    }
-
     boolean reconnect()
     {
-        if (pubSubClient.connect(serverConfig.deviceId))
+        if (pubSubClient.connect(wifiConfig.deviceName, serverConfig.deviceId, NULL))
         {
-            String inTopic = String(serverConfig.topicIn) + "/" + String(serverConfig.deviceId) + "/#";
+            String inTopic = String(serverConfig.topicRpcIn) + "/+";
             pubSubClient.subscribe(inTopic.c_str());
 
 #ifdef LOGGING
@@ -49,9 +41,6 @@ class MqttCommandHandler : public IObserver, public INotifier
             Serial.print("Listening topic: ");
             Serial.println(inTopic);
 #endif
-            String data;
-            getInfo(data);
-            publishData("/init", data.c_str());
         }
         return pubSubClient.connected();
     }
@@ -60,6 +49,10 @@ class MqttCommandHandler : public IObserver, public INotifier
     {
         if (!pubSubClient.connected())
         {
+            if (WiFi.status() != WL_CONNECTED)
+            {
+                connectWiFi();
+            }
             long now = millis();
             if (now - lastReconnectAttempt > 5000)
             {
@@ -74,13 +67,12 @@ class MqttCommandHandler : public IObserver, public INotifier
         }
     }
 
-    void initializeWiFi()
+    void connectWiFi()
     {
-        WiFi.mode(WIFI_STA);
-        WiFi.hostname(wifiConfig.deviceName);
-        WiFi.config(IPAddress(wifiConfig.defaultIp[0], wifiConfig.defaultIp[1], wifiConfig.defaultIp[2], wifiConfig.defaultIp[3]),
-                    IPAddress(wifiConfig.gateway[0], wifiConfig.gateway[1], wifiConfig.gateway[2], wifiConfig.gateway[3]),
-                    IPAddress(wifiConfig.subnet[0], wifiConfig.subnet[1], wifiConfig.subnet[2], wifiConfig.subnet[3]));
+        // WiFi.hostname(wifiConfig.deviceName);
+        // WiFi.config(IPAddress(wifiConfig.defaultIp[0], wifiConfig.defaultIp[1], wifiConfig.defaultIp[2], wifiConfig.defaultIp[3]),
+        //             IPAddress(wifiConfig.gateway[0], wifiConfig.gateway[1], wifiConfig.gateway[2], wifiConfig.gateway[3]),
+        //             IPAddress(wifiConfig.subnet[0], wifiConfig.subnet[1], wifiConfig.subnet[2], wifiConfig.subnet[3]));
         WiFi.begin(wifiConfig.ssid, wifiConfig.pass);
 
         // Wait for connection
@@ -92,47 +84,43 @@ class MqttCommandHandler : public IObserver, public INotifier
 
 #ifdef LOGGING
         Serial.println();
-        Serial.print(F("Device is at "));
-        Serial.print(F("mqtt://"));
-        Serial.print(WiFi.localIP());
-        Serial.print(F(":"));
-        Serial.println(wifiConfig.port);
+        Serial.print(F("Device IP: "));
+        Serial.println(WiFi.localIP());
 #endif
     }
 
     void initializeMqttClient()
     {
-        pubSubClient = PubSubClient(serverConfig.host, serverConfig.port, wifiClient);
-        pubSubClient.setCallback([this](char *topic, byte *payload, unsigned int length) {
-            WebServiceRegistry::getInstance().getService(&strrchr(topic, '/')[1])->processMessage(topic, payload, length);
+        pubSubClient = PubSubClient(wifiClient);
+        pubSubClient.setServer(serverConfig.host, serverConfig.port);
+        pubSubClient.setCallback([this](const char *topic, byte *payload, unsigned int length) {
+            onMessageCallback(topic, payload, length);
         });
+        reconnect();
     }
 
-  public:
-    MqttCommandHandler(Configuration::WifiNetworkConfiguration &wifiConfig_, Configuration::ServerConfig &serverConfig_)
-        : wifiConfig(wifiConfig_), serverConfig(serverConfig_)
+    void onMessageCallback(const char *topic, byte *payload, unsigned int length)
     {
+        char json[length + 1];
+        strncpy(json, (char *)payload, length);
+        json[length] = '\0';
+#ifdef LOGGING
+        Serial.println(F("Incomming"));
+        Serial.print("Topic: ");
+        Serial.println(topic);
+        Serial.print("Message: ");
+        Serial.println(json);
+#endif
+        HttpCommand command = parser.parse(payload, length);
+        ActionResponse & response = WebServiceRegistry::getInstance().getService(command)->processRequest(command);
+        StringPrint data;
+        response.bodyFlush(data);
+        String responseTopic = String(topic);
+        responseTopic.replace("request", "response");
+        publishData(responseTopic.c_str(), data.c_str());
     }
 
-    ~MqttCommandHandler()
-    {
-    }
-
-    void init()
-    {
-        initializeWiFi();
-        initializeMqttClient();
-        TickNotifier::getInstance().attach(this);
-    }
-
-    void update(const char *command)
-    {
-        if (strcmp(command, TickNotifier::getInstance().tickCommand) == 0)
-        {
-            clientLoop();
-        }
-    }
-
+  protected:
     /*virtual*/ void publishData(const char *topic, Serializable &data)
     {
         StaticJsonBuffer<400> jsonBuffer;
@@ -145,16 +133,56 @@ class MqttCommandHandler : public IObserver, public INotifier
 
     /*virtual*/ void publishData(const char *topic, const char *message)
     {
-        char newTopic[100];
-        strcpy(newTopic, serverConfig.topicOut);
-        strcat(newTopic, "/");
-        strcat(newTopic, serverConfig.deviceId);
-        strcat(newTopic, topic);
 #ifdef LOGGING
+        Serial.println(F("Outgoing"));
         Serial.print(F("@"));
-        Serial.println(newTopic);
+        Serial.println(topic);
+        Serial.print(F("#"));
+        Serial.println(message);
 #endif
-        pubSubClient.publish(&newTopic[0], message);
+        pubSubClient.publish(topic, message);
+    }
+
+  public:
+    MqttCommandHandler(Configuration::WifiNetworkConfiguration &wifiConfig_, Configuration::ServerConfig &serverConfig_, MqttCommandParser &parser_)
+        : wifiConfig(wifiConfig_), serverConfig(serverConfig_), parser(parser_)
+    {
+    }
+
+    ~MqttCommandHandler()
+    {
+    }
+
+    void init()
+    {
+        connectWiFi();
+        initializeMqttClient();
+        TickNotifier::getInstance().attach(this);
+    }
+
+    void update(const char *command)
+    {
+        if (strcmp(command, TickNotifier::getInstance().tickCommand) == 0)
+        {
+            clientLoop();
+        }
+    }
+
+    /*virtual*/ void publishTelemetry(const char *message)
+    {
+        publishData(serverConfig.topicOut, message);
+    }
+    /*virtual*/ void publishTelemetry(Serializable &data)
+    {
+        publishData(serverConfig.topicOut, data);
+    }
+    /*virtual*/ void publishAttributes(const char *message)
+    {
+        publishData(serverConfig.topicAttrOut, message);
+    }
+    /*virtual*/ void publishAttributes(Serializable &data)
+    {
+        publishData(serverConfig.topicAttrOut, data);
     }
 };
 

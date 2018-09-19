@@ -60,5 +60,5 @@ bool HeaterController::getStatus()
 
 void HeaterController::toJson(JsonObject &root)
 {
-    root["status"] = getStatus() ? "ON" : "OFF";
+    root["status"] = getStatus();
 }

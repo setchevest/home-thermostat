@@ -34,7 +34,7 @@ private:
   void check();
   void cleanup();
   void invalidateHeaterStatus();
-  void notifyChange();
+  void notifyChange(Serializable &data);
 
 public:
   Thermostat(INotifier &notifier_);
@@ -42,6 +42,7 @@ public:
   void init(ThermostatConfig config);
   void toJson(JsonObject &root);
   void toggleHeater();
+  void toggleMode();
   void heaterOn();
   void heaterOff();
   void setManualMode(bool manualModeEnabled_);

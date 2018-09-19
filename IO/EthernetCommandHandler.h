@@ -27,6 +27,8 @@ class EthernetCommandHandler : public IObserver
             HttpCommand command = parser.parse(client);
             Environment::printDiagnosticData(Serial);
             WebServiceRegistry::getInstance().getService(command)->processRequest(command, client);
+            delay(2);      //let browser get the info.
+            client.stop(); //Close the connection
             Environment::printDiagnosticData(Serial);
 #ifdef LOGGING
             Serial.println(F("Client disconnected"));

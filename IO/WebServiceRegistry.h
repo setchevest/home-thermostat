@@ -1,6 +1,6 @@
 #ifndef WebServiceFactory_h
 #define WebServiceFactory_h
-#include <IO/WebResponse.h>
+#include <IO/ActionResponse.h>
 #include <IO/WebService.h>
 #include <IO/DefaultWebService.h>
 
@@ -40,15 +40,6 @@ class WebServiceRegistry
     {
         for (size_t i = 0; i < servicesQty; i++)
             if (services[i]->canExecute(command))
-                return services[i];
-
-        return defaultService;
-    }
-
-    WebService *getService(const char *topic)
-    {
-        for (size_t i = 0; i < servicesQty; i++)
-            if (services[i]->canExecute(topic))
                 return services[i];
 
         return defaultService;
