@@ -4,7 +4,7 @@
 #include <IO/JsonResponse.h>
 
 #define THERMOSTAT_INFO_COMMAND "getStatus"
-#define THERMOSTAT_HEATER_COMMAND "setHeater"
+#define THERMOSTAT_HEATER_COMMAND "setStatus"
 #define THERMOSTAT_MODE_COMMAND "setMode"
 
 class ThermostatWebService : public WebService

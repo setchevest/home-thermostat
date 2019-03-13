@@ -6,8 +6,8 @@
 class INotifier
 {
 protected:
-  virtual void publishData(const char *topic, Serializable &data) = 0;
-  virtual void publishData(const char *topic, const char *message) = 0;
+  virtual void publishData(const char *topic, Serializable &data, bool retained = false) = 0;
+  virtual void publishData(const char *topic, const char *message, bool retained = false) = 0;
 public:
   virtual void publishTelemetry(const char *message) = 0;
   virtual void publishTelemetry(Serializable &data) = 0;

@@ -27,7 +27,7 @@ class MqttCommandHandler : public IObserver, public INotifier
 
     boolean reconnect()
     {
-        if (pubSubClient.connect(wifiConfig.deviceName, serverConfig.deviceId, NULL))
+        if (pubSubClient.connect(wifiConfig.deviceName, serverConfig.deviceId, serverConfig.devicePass))
         {
             String inTopic = String(serverConfig.topicRpcIn) + "/+";
             pubSubClient.subscribe(inTopic.c_str());
@@ -111,17 +111,17 @@ class MqttCommandHandler : public IObserver, public INotifier
         Serial.print("Message: ");
         Serial.println(json);
 #endif
-        HttpCommand command = parser.parse(payload, length);
+        HttpCommand command = parser.parse(topic, payload, length);
         ActionResponse & response = WebServiceRegistry::getInstance().getService(command)->processRequest(command);
         StringPrint data;
         response.bodyFlush(data);
-        String responseTopic = String(topic);
-        responseTopic.replace("request", "response");
-        publishData(responseTopic.c_str(), data.c_str());
+        // String responseTopic = String(topic);
+        // responseTopic.replace("request", "response");
+        publishTelemetry( data.c_str());
     }
 
   protected:
-    /*virtual*/ void publishData(const char *topic, Serializable &data)
+    /*virtual*/ void publishData(const char *topic, Serializable &data, bool retained = false)
     {
         StaticJsonBuffer<400> jsonBuffer;
         JsonObject &root = jsonBuffer.createObject();
@@ -131,7 +131,7 @@ class MqttCommandHandler : public IObserver, public INotifier
         publishData(topic, client.c_str());
     }
 
-    /*virtual*/ void publishData(const char *topic, const char *message)
+    /*virtual*/ void publishData(const char *topic, const char *message, bool retained = false)
     {
 #ifdef LOGGING
         Serial.println(F("Outgoing"));
@@ -140,7 +140,7 @@ class MqttCommandHandler : public IObserver, public INotifier
         Serial.print(F("#"));
         Serial.println(message);
 #endif
-        pubSubClient.publish(topic, message);
+        pubSubClient.publish(topic, message, retained);
     }
 
   public:
@@ -170,11 +170,11 @@ class MqttCommandHandler : public IObserver, public INotifier
 
     /*virtual*/ void publishTelemetry(const char *message)
     {
-        publishData(serverConfig.topicOut, message);
+        publishData(serverConfig.topicOut, message, true);
     }
     /*virtual*/ void publishTelemetry(Serializable &data)
     {
-        publishData(serverConfig.topicOut, data);
+        publishData(serverConfig.topicOut, data, true);
     }
     /*virtual*/ void publishAttributes(const char *message)
     {

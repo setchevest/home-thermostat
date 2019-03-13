@@ -28,7 +28,6 @@ void setup()
 #endif
   handler = new MqttCommandHandler(netConfig, serverConfig, parser);
   thermo = new Thermostat(*handler);
-  delay(10);
   WebServiceRegistry::getInstance().registerService(new ThermostatWebService(*thermo));
   handler->init();
   delay(100);

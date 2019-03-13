@@ -7,16 +7,17 @@ namespace Configuration
 
 struct ServerConfig
 {
-    const char* host = "192.168.0.3";
+    const char* host = "192.168.1.100";
     unsigned int port = 1883;
     const char* configPath = "/api/thermostat/config";
     const char* eventPath = "";
-    const char* deviceId = "HomeThermostat";
-    const char* topicRpcIn = "v1/devices/me/rpc/request";
-    const char* topicRpcOut = "v1/devices/me/rpc/response";
-    const char* topicAttrIn = "v1/devices/me/attributes/request";
-    const char* topicAttrOut = "v1/devices/me/attributes";
-    const char* topicOut = "v1/devices/me/telemetry";
+    const char* deviceId = "homeassistant";
+    const char* devicePass = "yupi";
+    const char* topicRpcIn = "devices/thermostat/request";
+    const char* topicRpcOut = "devices/thermostat/response";
+    const char* topicAttrIn = "devices/thermostat/attributes/request";
+    const char* topicAttrOut = "devices/thermostat/attributes/response";
+    const char* topicOut = "devices/thermostat/telemetry";
 };
 
 struct ZoneConfig

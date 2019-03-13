@@ -29,7 +29,7 @@ class MqttCommandParser
         return result;
     } // end of processData
 
-    static void processIncomingRequest(byte *payload, unsigned int length, HttpCommand *command)
+    static void processIncomingRequest(const char* topic, byte *payload, unsigned int length, HttpCommand *command)
     {
         if (length > MAX_REQUEST_INPUT)
         {
@@ -64,21 +64,25 @@ class MqttCommandParser
         command->params = data["params"];
     }
 
+    static const char *getLastPath(const char *topic)
+    {
+        return &strrchr(topic, '/')[1];
+    }
+
   public:
     MqttCommandParser(/* args */) {}
     ~MqttCommandParser() {}
 
-    HttpCommand parse(byte *payload, unsigned int length)
+    HttpCommand parse(const char* topic, byte *payload, unsigned int length)
     {
         HttpCommand command;
-        processIncomingRequest(payload, length, &command);
+        processIncomingRequest(topic, payload, length, &command);
         return command;
     }
 
     const char *parseReqId(const char *topic)
     {
-        return &strrchr(topic, '/')[1];
-        ;
+        return getLastPath(topic);
     }
 };
 
